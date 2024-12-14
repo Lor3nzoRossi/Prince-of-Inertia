@@ -110,12 +110,6 @@ static void ins_stanza() {
         return;
     }
 
-    //puntatori della nuova stanza
-    nuovaStanza->stanza_sopra = NULL;
-    nuovaStanza->stanza_sotto = NULL;
-    nuovaStanza->stanza_sinistra = NULL;
-    nuovaStanza->stanza_destra = NULL;
-
     //inserimento parametri della nuova stanza
     nuovaStanza->tipo_stanza = leggi_numero("Inserisci il tipo della stanza (numero intero): ");
     nuovaStanza->trabocchetto = leggi_numero("Inserisci il tipo di trabocchetto (numero intero): ");

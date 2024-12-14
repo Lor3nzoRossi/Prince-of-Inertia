@@ -1,7 +1,7 @@
-./game.exe
+game.exe
 
-./gamelib.h.gcj
+gamelib.h.gcj
 
-./gamelib.o
+gamelib.o
 
-./APPUNTI.md
+APPUNTI.md
