@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "gamelib.h"
 
 /**
@@ -69,39 +70,31 @@ void menu_stanze(){
 /**
  * Inizializza un giocatore
  * @param giocatore struct giocatore da inzializzare
- * @param isPrincipe indica se e' stato scelto un principe (-1 se non e' stato ancora scelto e 0 se e' stato scelto)
  * @param numGiocatore numero della creazione del giocatore
  */
-void inizializza_giocatore(struct Giocatore* giocatore, int* isPrincipe, int numGiocatore) {
-    numGiocatore += 1; // Numero del giocatore per la visualizzazione
+void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore) {
+    numGiocatore += 1; //aumento di 1 per visualizzazione
 
-    // Non è ancora stato scelto principe
-    if (*isPrincipe == -1) {
-        char* stringaClasse = "Inserisci 0 per principe o 1 per doppleganger: ", numGiocatore;
-        giocatore->classe_giocatore = leggi_numero(stringaClasse);
-        if (giocatore->classe_giocatore == 0) { // Se l'utente sceglie principe
-            *isPrincipe = 0;  // Aggiornamento della variabile sulla presenza del principe
-        }
-    } else if (*isPrincipe == 0) { // È stato scelto principe
-        printf("Visto che e' stato scelto un principe, e' stata automaticamente impostata la classe doppleganger.\n");
-        giocatore->classe_giocatore = 1;  // Impostazione automatica a doppleganger
-    }
+    //INSERIMENTO DATI GIOCATORE
 
-    // Inserimento dei punti vita massimi
-    giocatore->p_vita_max = leggi_numero("Inserisci i punti vita massimi per il giocatore: ");
-    giocatore->p_vita = giocatore->p_vita_max;  // Imposta i punti vita correnti uguali a quelli massimi
+    printf("Inserire il nome per il giocatore: ");
+    scanf("%s", &giocatore->nome_giocatore); 
 
-    // Inserimento dei dadi per l'attacco
-    giocatore->dadi_attacco = leggi_numero("Inserisci il numero di dadi attacco per il giocatore: ");
+    giocatore->p_vita_max = leggi_numero("Inserire i punti vita massimi per il giocatore: ");
+    giocatore->p_vita = giocatore->p_vita_max;  //imposta i punti vita correnti uguali a quelli massimi
 
-    // Inserimento dei dadi per la difesa
-    giocatore->dadi_difesa = leggi_numero("Inserisci il numero di dadi difesa per il giocatore: ");
+    giocatore->dadi_attacco = leggi_numero("Inserire il numero di dadi attacco per il giocatore: ");
 
-    giocatore->posizione = NULL; // Inizializzazione della posizione (di default NULL)
+    giocatore->dadi_difesa = leggi_numero("Inserire il numero di dadi difesa per il giocatore: ");
+
+    giocatore->posizione = NULL; //inizializzazione della posizione (di default NULL)
 }
 
 
-// Funzione per aggiungere una stanza
+/**
+ * La funzione ins_stanza() inserisce una nuova stanza in memoria, 
+ * collegandola alla lista esistente secondo una direzione scelta.
+ */
 static void ins_stanza() {
     struct Stanza* nuovaStanza = (struct Stanza*)malloc(sizeof(struct Stanza));
     //controllo se spazio in memoria è sufficiente per la creazione della stanza
@@ -188,45 +181,28 @@ static void canc_stanza(struct Stanza* stanza_corrente, char direzione) {
     }
 }
 
-// Funzione per stampare le informazioni di una stanza
-static void stampa_stanza(struct Stanza* stanza) {
-    if (stanza == NULL) {
-        printf("Stanza vuota.\n");
+/**
+ * stampa tutte le stanze presenti
+ */
+void stampa_stanze() {
+    //controlla se ci sono stanze
+    if (pFirst == NULL) {
+        printf("La lista delle stanze è vuota.\n");
         return;
     }
 
-    printf("Tipo stanza: %d, Trabocchetto: %d, Tesoro: %d\n", stanza->tipo_stanza, stanza->trabocchetto, stanza->tesoro);
-}
-
-// Funzione per stampare tutte le stanze collegate
-static void stampa_stanze(struct Stanza* stanza_iniziale) {
-    if (stanza_iniziale == NULL) {
-        printf("Mappa vuota.\n");
-        return;
-    }
-
-    printf("Stanza iniziale:\n");
-    stampa_stanza(stanza_iniziale);
-
-    if (stanza_iniziale->stanza_destra) {
-        printf("Stanza destra:\n");
-        stampa_stanza(stanza_iniziale->stanza_destra);
-    }
-    if (stanza_iniziale->stanza_sinistra) {
-        printf("Stanza sinistra:\n");
-        stampa_stanza(stanza_iniziale->stanza_sinistra);
-    }
-    if (stanza_iniziale->stanza_sopra) {
-        printf("Stanza sopra:\n");
-        stampa_stanza(stanza_iniziale->stanza_sopra);
-    }
-    if (stanza_iniziale->stanza_sotto) {
-        printf("Stanza sotto:\n");
-        stampa_stanza(stanza_iniziale->stanza_sotto);
+    struct Stanza* corrente = pFirst; //puntatore per scorrere la lista
+    int index = 1; //contatore per numerare le stanze
+    printf("Elenco delle stanze:\n");
+    while (corrente != NULL) {
+        //scorrere tutte le stanze somehow
     }
 }
 
-// Funzione per generare una stanza casuale
+/**
+ * Cancella tutte le stanze e ne crea altre 15 con valori casuali
+ * 
+ */
 static struct Stanza* genera_random() {
 
 }
@@ -241,36 +217,66 @@ static void chiudi_mappa() {
  * Funzione per impostare il gioco
  */
 void imposta_gioco() {
-    struct Giocatore* giocatori[3] = {NULL, NULL, NULL};
     int num_giocatori;
-    int isPrincipe = -1;  
 
     num_giocatori = leggi_numero("Inserisci il numero di giocatori (1-3): ");  //Usa la funzione per leggere in modo sicuro
 
-    //Controllo sul numero di giocatori
+    //controllo sul numero di giocatori
     while (num_giocatori < 1 || num_giocatori > 3) {
         num_giocatori = leggi_numero("Numero non valido! Inserisci un numero di giocatori tra 1 e 3: ");  //Usa la funzione per leggere in modo sicuro
     }
 
     printf("Hai scelto %d giocatori.\n", num_giocatori);
 
-    //Creazione dinamica dei giocatori
-    for (int i = 0; i < num_giocatori; i++) {
-        giocatori[i] = (struct Giocatore*) malloc(sizeof(struct Giocatore));
+    if(num_giocatori > 1){
+        //creazione dinamica dei giocatori
+        for (int i = 0; i < num_giocatori; i++) {
+            giocatori[i] = (struct Giocatore*) malloc(sizeof(struct Giocatore)); //creazione area di memoria
 
-        if (giocatori[i] == NULL) {
-            printf("Errore nell'allocazione della memoria per il giocatore %d.\n", i + 1);
+            if (giocatori[i] == NULL) {
+                printf("Errore nell'allocazione della memoria per il giocatore %d.\n", i + 1);
+                return;
+            }
+
+            if(i == num_giocatori - 1){
+                bool trovatoPrincipe = false;
+                for(int j = 0; j<num_giocatori; j++){
+                    if(giocatori[j]->classe_giocatore == 0){
+                        trovatoPrincipe = true;
+                    }
+                }
+                if(trovatoPrincipe){
+                    char* stringaClasse = "Inserisci 0 per principe o 1 per doppleganger: ", numGiocatore;
+                    giocatori[i]->classe_giocatore = leggi_numero(stringaClasse); 
+                }else{
+                    giocatori[i] = (struct Giocatore*) malloc(sizeof(struct Giocatore));
+                    printf("Non e' stato scelto alcun principe, assegnazione automatica a principe...\n");
+                    giocatori[i]->classe_giocatore = 0; //impostazione classe a principe
+                }
+            }else{
+                char* stringaClasse = "Inserisci 0 per principe o 1 per doppleganger: ", numGiocatore;
+                giocatori[i]->classe_giocatore = leggi_numero(stringaClasse); 
+            }           
+
+            inizializza_giocatore(giocatori[i], i); //inizializzazione del giocatore con i dati comuni ad entrambe le classi
+        }
+    }else{
+        giocatori[0] = (struct Giocatore*) malloc(sizeof(struct Giocatore));
+
+        if (giocatori[0] == NULL) {
+            printf("Errore nell'allocazione della memoria per il giocatore");
             return;
         }
 
-        inizializza_giocatore(giocatori[i], &isPrincipe, i); //inizializzazione del giocatore
+        printf("Per un solo giocatore, verra' attribuita l'unica classe disponibile è il principe\n");
+        giocatori[0]->classe_giocatore = 0; //impostazione classe a principe
+
+        inizializza_giocatore(giocatori[0], 0);
     }
 
-    //Se non e' stato scelto un principe, lo impostiamo per l'ultimo giocatore
-    if (isPrincipe == -1) {
-        printf("Nessun principe scelto. Il giocatore %d diventa automaticamente principe.\n", num_giocatori);
-        giocatori[num_giocatori - 1]->classe_giocatore = 0;  //Impostiamo automaticamente principe
-        inizializza_giocatore(giocatori[num_giocatori - 1], &isPrincipe, num_giocatori - 1);
+    printf("GIOCATORI:\n");
+    for(int i = 0; i<num_giocatori; i++){
+        printf("- %s (classe %d)\n", giocatori[i]->nome_giocatore, giocatori[i]->classe_giocatore);
     }
 
     printf("Il gioco e' pronto a partire con %d giocatori.\n", num_giocatori);

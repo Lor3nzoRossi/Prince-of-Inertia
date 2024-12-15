@@ -3,6 +3,7 @@ le definizioni del tipo delle strutture dati utilizzate in "gamelib.c"*/
 
 #ifndef GAMELIB_H  
 #define GAMELIB_H  
+#define MAX_PLAYERS 3
 
 //ENUM
 
@@ -66,6 +67,7 @@ struct Giocatore {
     unsigned char dadi_difesa;
 };
 
+static struct Giocatore* giocatori[MAX_PLAYERS];
 
 //FUNZIONI
 
@@ -74,7 +76,7 @@ void stampaMenu();
 
 void imposta_gioco();
 int check_numero();
-void inizializza_giocatore(struct Giocatore* giocatore, int* isPrincipe, int numGiocatore);
+void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore);
 
 
 
