@@ -1,7 +1,6 @@
 /*Questi file contiene le dichiarazioni delle funzioni definite in "gamelib.c" (solo quelle non static) e
 le definizioni del tipo delle strutture dati utilizzate in "gamelib.c"*/
 
-#ifndef GAMELIB_H  
 #define GAMELIB_H  
 #define MAX_PLAYERS 3
 
@@ -75,16 +74,12 @@ void stampaMenu();
 
 
 void imposta_gioco();
-int leggi_numero();
+int leggi_numero(const char* messaggio);
 void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore);
 
-
+static void ins_stanza();
+void stampa_stanze();
 
 void gioca();  
 void termina_gioco();  
 void crediti();  
-
-
-
-#endif  
-

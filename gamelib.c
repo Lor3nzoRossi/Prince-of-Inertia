@@ -23,6 +23,10 @@ int leggi_numero(const char* messaggio) {
     }
 }
 
+/**
+ * Stampa il menù delle stanze
+ * permettendo la scelta di una delle opzioni
+ */
 void menu_stanze(){
     int scelta;
     do {
@@ -35,22 +39,18 @@ void menu_stanze(){
         printf("\n5. Chiudi la mappa e termina");
         printf("\nSeleziona un'opzione (1-5): ");
 
-        // Lettura dell'opzione scelta dall'utente
-        while (scanf("%d", &scelta) != 1 || scelta < 1 || scelta > 5) {
-            printf("\nInput non valido! Inserisci un numero tra 1 e 5: ");
-            while (getchar() != '\n'); // Pulizia del buffer
-        }
+        scelta = leggi_numero("");
 
         // Gestione delle opzioni
         switch (scelta) {
             case 1:
-                // ins_stanza();
+                ins_stanza();
                 break;
             case 2:
                 // canc_stanza();
                 break;
             case 3:
-                // stampa_stanze();
+                stampa_stanze();
                 break;
             case 4:
                 // genera_random();
@@ -96,7 +96,7 @@ void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore) {
  * collegandola alla lista esistente secondo una direzione scelta.
  */
 static void ins_stanza() {
-    struct Stanza* nuovaStanza = (struct Stanza*)malloc(sizeof(struct Stanza));
+    struct Stanza* nuovaStanza = (struct Stanza*)malloc(sizeof(struct Stanza)); //creazione spazio di memoria per nuova stanza
     //controllo se spazio in memoria è sufficiente per la creazione della stanza
     if (!nuovaStanza) {
         printf("Errore: memoria insufficiente.\n");
@@ -117,8 +117,8 @@ static void ins_stanza() {
     }
 
     //nel caso esistesse già una stanza nella lista, chiedere dove creare questa nuova stanza
-    printf("In quale direzione vuoi aggiungere la stanza? (sopra/sotto/sinistra/destra): ");
     char direzione[10];
+    printf("In quale direzione, rispetto all'ultima stnaza, vuoi aggiungere la nuova stanza? (sopra/sotto/sinistra/destra): ");
     scanf("%s", direzione);
 
     //inserimento della nuova stanza nella direzione scelta
@@ -152,7 +152,7 @@ static void ins_stanza() {
         }
     } else {
         printf("Direzione non valida. Stanza non aggiunta.\n");
-        free(nuovaStanza); //liberazione della memoria riservata per la nuova stanza che però è impossibile da creare
+        free(nuovaStanza); //liberazione della memoria riservata per la nuova stanza perché è impossibile da creare
         return;
     }
     
@@ -193,10 +193,38 @@ void stampa_stanze() {
 
     struct Stanza* corrente = pFirst; //puntatore per scorrere la lista
     int index = 1; //contatore per numerare le stanze
-    printf("Elenco delle stanze:\n");
+    printf("Elenco delle stanze:\n\n");
     while (corrente != NULL) {
-        //scorrere tutte le stanze somehow
+        // Stampa informazioni sulla stanza corrente
+        printf("Stanza corrente:\n");
+        printf("Tipo di stanza: %d\n", corrente->tipo_stanza);
+        printf("Trabocchetto: %d\n", corrente->trabocchetto);
+        printf("Tesoro: %d\n\n", corrente->tesoro);
+
+        // Esplora la stanza sopra, se presente
+        if (corrente->stanza_sopra) {
+            printf("Stanza sopra:\n");
+            corrente = corrente->stanza_sopra;
+        }
+        // Esplora la stanza a destra, se presente
+        else if (corrente->stanza_destra) {
+            printf("Stanza a destra:\n");
+            corrente = corrente->stanza_destra;
+        }
+        // Esplora la stanza sotto, se presente
+        else if (corrente->stanza_sotto) {
+            printf("Stanza sotto:\n");
+            corrente = corrente->stanza_sotto;
+        }
+        // Esplora la stanza a sinistra, se presente
+        else if (corrente->stanza_sinistra) {
+            printf("Stanza a sinistra:\n");
+            corrente = corrente->stanza_sinistra;
+        } else {
+            break; // Se non ci sono stanze adiacenti, termina il ciclo
+        }
     }
+
 }
 
 /**
