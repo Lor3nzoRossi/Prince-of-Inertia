@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include "gamelib.h"
 
+
+static void ins_stanza(void);
+static struct Stanza* genera_random(void);
+
 /**
  * Controlla se l'input da tastiera è un numero 
  * e continua a richiedere l'input fino a condizione soddisfatta
@@ -21,6 +25,15 @@ int leggi_numero(const char* messaggio) {
             while (getchar() != '\n'); //pulizia del buffer di input
         }
     }
+}
+
+bool sceltaSiNo(char scelta){
+    if(scelta == 's' || scelta == 'S'){
+        return true;
+    }else if(scelta == 'n' || scelta == 'N'){
+        return false;
+    }
+    printf("Scelta non valida, inserire 's' per 'sì' e 'n' per 'no'.");  
 }
 
 /**
@@ -53,7 +66,18 @@ void menu_stanze(){
                 stampa_stanze();
                 break;
             case 4:
-                // genera_random();
+                char sceltaDisclamer = 'n';
+                if(pFirst){
+                    printf("*ATTENZIONE* se si prosegue le precedenti stanze verranno eliminate, proseguire? (s/n)");
+                    scanf(" %c", &sceltaDisclamer);
+                    if(sceltaSiNo(sceltaDisclamer)){
+                        genera_random();
+                    }else{
+                        break;
+                    }
+                }else{
+                    genera_random();
+                }
                 break;
             case 5:
                 // chiudi_mappa();
@@ -363,30 +387,44 @@ void stampa_stanze() {
         printf("Trabocchetto: %s\n", get_trabocchetto(corrente->trabocchetto));
         printf("Tesoro: %s\n\n", get_tesoro(corrente->tesoro));
         index += 1;
-        // Esplora la stanza sopra, se presente
+        //stampa stanza sopra, se presente
         if (corrente->stanza_sopra) {
             printf("Stanza sopra:\n");
             corrente = corrente->stanza_sopra;
         }
-        // Esplora la stanza a destra, se presente
+        //stampa stanza a destra, se presente
         else if (corrente->stanza_destra) {
             printf("Stanza a destra:\n");
             corrente = corrente->stanza_destra;
         }
-        // Esplora la stanza sotto, se presente
+        //stampa stanza sotto, se presente
         else if (corrente->stanza_sotto) {
             printf("Stanza sotto:\n");
             corrente = corrente->stanza_sotto;
         }
-        // Esplora la stanza a sinistra, se presente
+        //stampa stanza a sinistra, se presente
         else if (corrente->stanza_sinistra) {
             printf("Stanza a sinistra:\n");
             corrente = corrente->stanza_sinistra;
         } else {
-            break; // Se non ci sono stanze adiacenti, termina il ciclo
+            break; //se non ci sono stanze adiacenti, termina il ciclo
         }
     }
 
+}
+
+bool elimina_mappa(){
+    bool eliminata = false;
+    if(pFirst){
+        pFirst->stanza_sopra = NULL;
+        pFirst->stanza_sotto = NULL;
+        pFirst->stanza_destra = NULL;
+        pFirst->stanza_sinistra = NULL;
+        pFirst = NULL;
+        eliminata = true;
+    }else{
+        return eliminata;
+    }
 }
 
 /**
@@ -394,7 +432,7 @@ void stampa_stanze() {
  * 
  */
 static struct Stanza* genera_random() {
-
+    elimina_mappa() ? printf("Mappa precedente eliminata.\n") : printf("Nessuna mappa da eliminare.\n");
 }
 
 // Funzione per liberare tutta la mappa
@@ -472,26 +510,29 @@ void imposta_gioco() {
 
     printf("Numero di giocatori: %d.\n", num_giocatori);
     char scelta = 's';
-    printf("Ora il game master creerà la mappa di gioco:\n");
+    bool primo = true;
+    printf("Ora il game master creera' la mappa di gioco:\n");
     do
     {
-        printf("Iniziare la creazione della mappa dalla generazione di 15 stanze con dati casuali? (s/n)\n");
-        scanf(" %c", &scelta);  
+        if(primo){
+            printf("Iniziare la creazione della mappa dalla generazione di 15 stanze con dati casuali? (s/n)\n");
+            scanf(" %c", &scelta);  
+            if(sceltaSiNo(scelta)){
+                printf("Generazione di 15 stanze casuali...\n");
+                genera_random();  
+                printf("Generazione completata.\n");
 
-        if (scelta == 's' || scelta == 'S') {
-            printf("Generazione di 15 stanze casuali...\n");
-            genera_random();  
-            printf("Generazione completata.\n");
-
-            printf("Si desidera apportare delle modifiche alla mappa di gioco gia' creata? (s/n)\n");
-            scanf(" %c", &scelta); 
-            if (scelta == 's' || scelta == 'S') {
-                menu_stanze();  
+                printf("Si desidera apportare delle modifiche alla mappa di gioco gia' creata? (s/n)\n");
+                scanf(" %c", &scelta); 
+                if (sceltaSiNo(scelta)) {
+                    menu_stanze();  
+                }
+            }else{
+                menu_stanze();
             }
-        } else if (scelta == 'n' || scelta == 'N') {
-            menu_stanze();  
-        } else {
-            printf("Risposta non valida, inserire s per (si) e n per (no).\n");
+            primo = false;
+        }else{
+            menu_stanze();
         }
     } while (scelta == 's' || scelta == 'S' || scelta == 'n' || scelta == 'N');
 }

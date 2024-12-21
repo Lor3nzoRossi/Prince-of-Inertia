@@ -81,14 +81,13 @@ enum Tipo_stanza scegli_tipoStanza();
 enum Tipo_trabocchetto scegli_trabocchetto();
 enum Tipo_tesoro scegli_tesoro();
 
-
-static void ins_stanza();
-
 const char* get_tipoStanza(int nStanza);
 const char* get_trabocchetto(int nStanza);
 const char* get_tesoro(int nStanza);
 
 void stampa_stanze();
+
+bool elimina_mappa();
 
 void gioca();  
 void termina_gioco();  
