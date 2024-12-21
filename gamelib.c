@@ -219,11 +219,11 @@ static void chiudi_mappa() {
 void imposta_gioco() {
     int num_giocatori;
 
-    num_giocatori = leggi_numero("Inserisci il numero di giocatori (1-3): ");  //Usa la funzione per leggere in modo sicuro
+    num_giocatori = leggi_numero("Inserisci il numero di giocatori (1-3): ");
 
     //controllo sul numero di giocatori
     while (num_giocatori < 1 || num_giocatori > 3) {
-        num_giocatori = leggi_numero("Numero non valido! Inserisci un numero di giocatori tra 1 e 3: ");  //Usa la funzione per leggere in modo sicuro
+        num_giocatori = leggi_numero("Numero non valido! Inserisci un numero di giocatori tra 1 e 3: "); 
     }
 
     printf("Hai scelto %d giocatori.\n", num_giocatori);
@@ -238,25 +238,26 @@ void imposta_gioco() {
                 return;
             }
 
-            if(i == num_giocatori - 1){
-                bool trovatoPrincipe = false;
-                for(int j = 0; j<num_giocatori; j++){
-                    if(giocatori[j]->classe_giocatore == 0){
-                        trovatoPrincipe = true;
-                    }
+            bool trovatoPrincipe = false;
+            for (int j = 0; j < num_giocatori; j++) {
+                if (giocatori[j] != NULL && giocatori[j]->classe_giocatore == 0) {
+                    trovatoPrincipe = true;
+                    break; 
                 }
-                if(trovatoPrincipe){
-                    char* stringaClasse = "Inserisci 0 per principe o 1 per doppleganger: ", numGiocatore;
-                    giocatori[i]->classe_giocatore = leggi_numero(stringaClasse); 
-                }else{
-                    giocatori[i] = (struct Giocatore*) malloc(sizeof(struct Giocatore));
+            }
+
+
+            if (trovatoPrincipe) {
+                printf("Dato che e' gia' stato scelto un principe, verra' automaticamente assegnata la classe doppleganger\n");
+                giocatori[i]->classe_giocatore = 1;
+            } else {
+                if (i == num_giocatori - 1) {
                     printf("Non e' stato scelto alcun principe, assegnazione automatica a principe...\n");
-                    giocatori[i]->classe_giocatore = 0; //impostazione classe a principe
+                    giocatori[i]->classe_giocatore = 0;
+                } else {
+                    giocatori[i]->classe_giocatore = leggi_numero("Inserisci 0 per principe o 1 per doppleganger ");
                 }
-            }else{
-                char* stringaClasse = "Inserisci 0 per principe o 1 per doppleganger: ", numGiocatore;
-                giocatori[i]->classe_giocatore = leggi_numero(stringaClasse); 
-            }           
+            }       
 
             inizializza_giocatore(giocatori[i], i); //inizializzazione del giocatore con i dati comuni ad entrambe le classi
         }

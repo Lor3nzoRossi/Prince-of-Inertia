@@ -75,7 +75,7 @@ void stampaMenu();
 
 
 void imposta_gioco();
-int check_numero();
+int leggi_numero();
 void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore);
 
 
