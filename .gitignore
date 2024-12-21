@@ -2,6 +2,10 @@ game.exe
 
 gamelib.h.gcj
 
+main.o
+
 gamelib.o
 
 APPUNTI.md
+
+gamelib.h.gch
