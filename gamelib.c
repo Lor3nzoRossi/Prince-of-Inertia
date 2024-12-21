@@ -60,7 +60,7 @@ void menu_stanze(){
                 printf("\nMappa chiusa. Programma terminato.\n");
                 break;
             default:
-                printf("\nErrore inaspettato.\n");
+                printf("\nScelta non valida, scegliere tra 1-5\n");
         }
 
     } while (scelta != 5);
@@ -92,8 +92,85 @@ void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore) {
 
 
 /**
- * La funzione ins_stanza() inserisce una nuova stanza in memoria, 
- * collegandola alla lista esistente secondo una direzione scelta.
+ * Permette di selezionare un tipo di stanza
+ * @returns enum Tipo_stanza selezionato
+ */
+enum Tipo_stanza scegli_tipoStanza() {
+    int scelta;
+    do{
+        printf("Scegli il tipo di stanza:\n");
+        printf("0 - Corridoio\n");
+        printf("1 - Scala\n");
+        printf("2 - Sala banchetto\n");
+        printf("3 - Magazzino\n");
+        printf("4 - Posto guardia\n");
+        printf("5 - Prigione\n");
+        printf("6 - Armeria\n");
+        printf("7 - Moschea\n");
+        printf("8 - Torre\n");
+        printf("9 - Bagni\n");
+        scelta = leggi_numero("");
+        printf("\n");
+        if(scelta < 0 || scelta > 9){
+            printf("Input non valido! Scegliere tra 0-9\n");
+        }
+    }while(scelta < 0 || scelta > 9);
+    return (enum Tipo_stanza)scelta;
+}
+
+/**
+ * Permette di selezionare un tipo di trabocchetto
+ * @returns enum Tipo_trabocchetto selezionato
+ */
+enum Tipo_trabocchetto scegli_trabocchetto() {
+    int scelta;
+    do
+    {
+        printf("Scegli il tipo di trabocchetto:\n");
+        printf("0 - Nessuno\n");
+        printf("1 - Tegola\n");
+        printf("2 - Lame\n");
+        printf("3 - Caduta\n");
+        printf("4 - Burrone\n");
+        scelta = leggi_numero("");
+        if(scelta < 0 || scelta > 4){
+            printf("Input non valido! Scegliere tra 0-4\n");
+        }
+    } while (scelta < 0 || scelta > 4);
+    
+    return (enum Tipo_trabocchetto)scelta;
+}
+
+/**
+ * Permette di selezionare un tipo di tesoro
+ * @returns enum Tipo_tesoro selezionato
+ */
+enum Tipo_tesoro scegli_tesoro() {
+    int scelta;
+    do
+    {
+        printf("Scegli il tipo di tesoro:\n");
+        printf("0 - Nessun tesoro\n");
+        printf("1 - Verde veleno\n");
+        printf("2 - Blu guarigione\n");
+        printf("3 - Rosso aumenta vita\n");
+        printf("4 - Spada tagliente\n");
+        printf("5 - Scudo\n");
+        scelta = leggi_numero("");
+        if(scelta < 0 || scelta > 5){
+            printf("Input non valido! Scegliere tra 0-5\n");
+        }
+    } while (scelta < 0 || scelta > 5);
+    
+    return (enum Tipo_tesoro)scelta;
+}
+
+
+
+
+/**
+ * Permette di inserire una nuova stanza
+ * scegliendone la posizione rispetto all'ultima creata
  */
 static void ins_stanza() {
     struct Stanza* nuovaStanza = (struct Stanza*)malloc(sizeof(struct Stanza)); //creazione spazio di memoria per nuova stanza
@@ -104,9 +181,10 @@ static void ins_stanza() {
     }
 
     //inserimento parametri della nuova stanza
-    nuovaStanza->tipo_stanza = leggi_numero("Inserisci il tipo della stanza (numero intero): ");
-    nuovaStanza->trabocchetto = leggi_numero("Inserisci il tipo di trabocchetto (numero intero): ");
-    nuovaStanza->tesoro = leggi_numero("Inserisci il tipo di tesoro (numero intero): ");
+    nuovaStanza->tipo_stanza = scegli_tipoStanza();
+
+    nuovaStanza->trabocchetto = scegli_trabocchetto();
+    nuovaStanza->tesoro = scegli_tesoro();
 
     //nel caso non fosse stata ancora aggiunta nessuna stanza
     if (pFirst == NULL) {
@@ -118,49 +196,56 @@ static void ins_stanza() {
 
     //nel caso esistesse già una stanza nella lista, chiedere dove creare questa nuova stanza
     char direzione[10];
-    printf("In quale direzione, rispetto all'ultima stnaza, vuoi aggiungere la nuova stanza? (sopra/sotto/sinistra/destra): ");
-    scanf("%s", direzione);
+    bool creata = false;
+    do
+    {
+        printf("In quale direzione, rispetto all'ultima stnaza, vuoi aggiungere la nuova stanza? (sopra/sotto/sinistra/destra): ");
+        scanf("%s", direzione);
 
-    //inserimento della nuova stanza nella direzione scelta
-    if (strcmp(direzione, "sopra") == 0) {
-        if (pUltima->stanza_sopra != NULL) {
-            printf("Errore: esiste gia' una stanza sopra.\n");
+        //inserimento della nuova stanza nella direzione scelta
+        if (strcmp(direzione, "sopra") == 0) {
+            creata = true;
+            if (pUltima->stanza_sopra != NULL) {
+                printf("Errore: esiste gia' una stanza sopra.\n");
+            } else {
+                pUltima->stanza_sopra = nuovaStanza;
+                printf("Stanza aggiunta sopra con successo!\n");
+            }
+        } else if (strcmp(direzione, "sotto") == 0) {
+            creata = true;
+            if (pUltima->stanza_sotto != NULL) {
+                printf("Errore: esiste gia' una stanza sotto.\n");
+            } else {
+                pUltima->stanza_sotto = nuovaStanza;
+                printf("Stanza aggiunta sotto con successo!\n");
+            }
+        } else if (strcmp(direzione, "sinistra") == 0) {
+            creata = true;
+            if (pUltima->stanza_sinistra != NULL) {
+                printf("Errore: esiste gia' una stanza a sinistra.\n");
+            } else {
+                pUltima->stanza_sinistra = nuovaStanza;
+                printf("Stanza aggiunta a sinistra con successo!\n");
+            }    
+        } else if (strcmp(direzione, "destra") == 0) {
+            creata = true;
+            if (pUltima->stanza_destra != NULL) {
+                printf("Errore: esiste gia' una stanza a destra.\n");
+            } else {
+                pUltima->stanza_destra = nuovaStanza;
+                printf("Stanza aggiunta a destra con successo!\n");
+            }
         } else {
-            pUltima->stanza_sopra = nuovaStanza;
-            printf("Stanza aggiunta sopra con successo!\n");
+            printf("Direzione non valida.\n");
         }
-    } else if (strcmp(direzione, "sotto") == 0) {
-        if (pUltima->stanza_sotto != NULL) {
-            printf("Errore: esiste gia' una stanza sotto.\n");
-        } else {
-            pUltima->stanza_sotto = nuovaStanza;
-            printf("Stanza aggiunta sotto con successo!\n");
-        }
-    } else if (strcmp(direzione, "sinistra") == 0) {
-        if (pUltima->stanza_sinistra != NULL) {
-            printf("Errore: esiste gia' una stanza a sinistra.\n");
-        } else {
-            pUltima->stanza_sinistra = nuovaStanza;
-            printf("Stanza aggiunta a sinistra con successo!\n");
-        }    
-    } else if (strcmp(direzione, "destra") == 0) {
-        if (pUltima->stanza_destra != NULL) {
-            printf("Errore: esiste gia' una stanza a destra.\n");
-        } else {
-            pUltima->stanza_destra = nuovaStanza;
-            printf("Stanza aggiunta a destra con successo!\n");
-        }
-    } else {
-        printf("Direzione non valida. Stanza non aggiunta.\n");
-        free(nuovaStanza); //liberazione della memoria riservata per la nuova stanza perché è impossibile da creare
-        return;
-    }
+    } while (!creata);
+    
     
     pUltima = nuovaStanza; //impostare la stanza appena creata come l'ultima
 }
 
 /**
- * Elimina l'ultima stanza
+ * da fare
  */
 static void canc_stanza(struct Stanza* stanza_corrente, char direzione) {
     //controllo se esistono stanze
@@ -182,6 +267,82 @@ static void canc_stanza(struct Stanza* stanza_corrente, char direzione) {
 }
 
 /**
+ * Recupera il nome del tipo della stanza dato un numero da 0 - 9 (in base alle scelte nel menù)
+ * @returns stringa del nome della stanza
+ */
+const char* get_tipoStanza(int nStanza) {
+    switch(nStanza) {
+        case 0:
+            return "Corridoio";
+        case 1:
+            return "Scala";
+        case 2:
+            return "Sala banchetto";
+        case 3:
+            return "Magazzino";
+        case 4:
+            return "Posto guardia";
+        case 5:
+            return "Prigione";
+        case 6:
+            return "Armeria";
+        case 7:
+            return "Moschea";
+        case 8:
+            return "Torre";
+        case 9:
+            return "Bagni";
+        default:
+            return "Tipo di stanza sconosciuto";
+    }
+}
+
+/**
+ * Recupera il nome del trabocchetto dato un numero da 0 - 9 (in base alle scelte nel menù)
+ * @returns stringa del nome del trabocchetto
+ */
+const char* get_trabocchetto(int nStanza) {
+    switch(nStanza) {
+        case 0:
+            return "Nessuno";
+        case 1:
+            return "Tegola";
+        case 2:
+            return "Lame";
+        case 3:
+            return "Caduta";
+        case 4:
+            return "Burrone";
+        default:
+            return "Tipo di trabocchetto sconosciuto";
+    }
+}
+
+/**
+ * Recupera il nome del tesoro dato un numero da 0 - 9 (in base alle scelte nel menù)
+ * @returns stringa del nome del tesoro
+ */
+const char* get_tesoro(int nStanza) {
+    switch(nStanza) {
+        case 0:
+            return "Nessun tesoro";
+        case 1:
+            return "Verde veleno";
+        case 2:
+            return "Blu guarigione";
+        case 3:
+            return "Rosso aumenta vita";
+        case 4:
+            return "Spada tagliente";
+        case 5:
+            return "Scudo";
+        default:
+            return "Tipo di tesoro sconosciuto";
+    }
+}
+
+
+/**
  * stampa tutte le stanze presenti
  */
 void stampa_stanze() {
@@ -195,12 +356,13 @@ void stampa_stanze() {
     int index = 1; //contatore per numerare le stanze
     printf("Elenco delle stanze:\n\n");
     while (corrente != NULL) {
-        // Stampa informazioni sulla stanza corrente
-        printf("Stanza corrente:\n");
-        printf("Tipo di stanza: %d\n", corrente->tipo_stanza);
-        printf("Trabocchetto: %d\n", corrente->trabocchetto);
-        printf("Tesoro: %d\n\n", corrente->tesoro);
-
+        if(index == 1){
+            printf("Prima stanza:\n");
+        }
+        printf("Tipo di stanza: %s\n", get_tipoStanza(corrente->tipo_stanza));
+        printf("Trabocchetto: %s\n", get_trabocchetto(corrente->trabocchetto));
+        printf("Tesoro: %s\n\n", get_tesoro(corrente->tesoro));
+        index += 1;
         // Esplora la stanza sopra, se presente
         if (corrente->stanza_sopra) {
             printf("Stanza sopra:\n");
