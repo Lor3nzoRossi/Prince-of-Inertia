@@ -470,11 +470,30 @@ void imposta_gioco() {
         printf("- %s (classe %d)\n", giocatori[i]->nome_giocatore, giocatori[i]->classe_giocatore);
     }
 
-    printf("Il gioco e' pronto a partire con %d giocatori.\n", num_giocatori);
-    menu_stanze();
+    printf("Numero di giocatori: %d.\n", num_giocatori);
+    char scelta = 's';
+    printf("Ora il game master creerà la mappa di gioco:\n");
+    do
+    {
+        printf("Iniziare la creazione della mappa dalla generazione di 15 stanze con dati casuali? (s/n)\n");
+        scanf(" %c", &scelta);  
 
+        if (scelta == 's' || scelta == 'S') {
+            printf("Generazione di 15 stanze casuali...\n");
+            genera_random();  
+            printf("Generazione completata.\n");
 
-    struct Stanza* mappa = NULL;
+            printf("Si desidera apportare delle modifiche alla mappa di gioco gia' creata? (s/n)\n");
+            scanf(" %c", &scelta); 
+            if (scelta == 's' || scelta == 'S') {
+                menu_stanze();  
+            }
+        } else if (scelta == 'n' || scelta == 'N') {
+            menu_stanze();  
+        } else {
+            printf("Risposta non valida, inserire s per (si) e n per (no).\n");
+        }
+    } while (scelta == 's' || scelta == 'S' || scelta == 'n' || scelta == 'N');
 }
 
 
