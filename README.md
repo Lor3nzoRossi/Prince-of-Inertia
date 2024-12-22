@@ -12,3 +12,7 @@ gcc main.o gamelib.o -o game
 
 ### avvio del gioco
 game
+
+
+# ESPANSIONI FUTURE
+- Possibilità di generare un numero di stanze fisso con genera_random()

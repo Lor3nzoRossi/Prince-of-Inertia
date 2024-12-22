@@ -3,25 +3,13 @@ le definizioni del tipo delle strutture dati utilizzate in "gamelib.c"*/
 
 #define GAMELIB_H  
 #define MAX_PLAYERS 3
+#include <stdbool.h>
 
 //ENUM
 
 enum tipo_giocatore {
     principe,
     doppleganger
-};
-
-enum Tipo_stanza {
-    corridoio,
-    scala,
-    sala_banchetto,
-    magazzino,
-    posto_guardia,
-    prigione,
-    armeria,
-    moschea,
-    torre,
-    bagni
 };
 
 enum Tipo_trabocchetto {
@@ -41,6 +29,20 @@ enum Tipo_tesoro {
     scudo
 };
 
+enum Tipo_stanza {
+    corridoio,
+    scala,
+    sala_banchetto,
+    magazzino,
+    posto_guardia,
+    prigione,
+    armeria,
+    moschea,
+    torre,
+    bagni
+};
+
+
 //STRUCT
 
 struct Stanza {
@@ -53,8 +55,9 @@ struct Stanza {
     enum Tipo_tesoro tesoro;
 };
 
-static struct Stanza* pFirst;
-static struct Stanza* pUltima;
+struct Stanza* pFirst;
+struct Stanza* pUltima;
+
 
 struct Giocatore {
     char nome_giocatore[100];
@@ -87,6 +90,7 @@ const char* get_tesoro(int nStanza);
 
 void stampa_stanze();
 
+static void chiudi_mappa();
 bool elimina_mappa();
 
 void gioca();  

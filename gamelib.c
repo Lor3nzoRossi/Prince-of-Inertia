@@ -4,11 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <time.h>
 #include "gamelib.h"
 
 
 static void ins_stanza(void);
-static struct Stanza* genera_random(void);
+static struct Stanza* genera_random(int nStanze);
 
 /**
  * Controlla se l'input da tastiera è un numero 
@@ -71,16 +72,17 @@ void menu_stanze(){
                     printf("*ATTENZIONE* se si prosegue le precedenti stanze verranno eliminate, proseguire? (s/n)");
                     scanf(" %c", &sceltaDisclamer);
                     if(sceltaSiNo(sceltaDisclamer)){
-                        genera_random();
+                        genera_random(15);
+                        printf("Stanze generate");
                     }else{
                         break;
                     }
                 }else{
-                    genera_random();
+                    genera_random(15);
                 }
                 break;
             case 5:
-                // chiudi_mappa();
+                chiudi_mappa();
                 printf("\nMappa chiusa. Programma terminato.\n");
                 break;
             default:
@@ -413,6 +415,9 @@ void stampa_stanze() {
 
 }
 
+/**
+ * Elimina la mappa di gioco, se presente almeno una stanza
+ */
 bool elimina_mappa(){
     bool eliminata = false;
     if(pFirst){
@@ -428,16 +433,81 @@ bool elimina_mappa(){
 }
 
 /**
- * Cancella tutte le stanze e ne crea altre 15 con valori casuali
- * 
+ * Cancella tutte le stanze e crea un numero variabile di nuove stanze
+ * @param nStanze numero di stanze da generare
  */
-static struct Stanza* genera_random() {
-    elimina_mappa() ? printf("Mappa precedente eliminata.\n") : printf("Nessuna mappa da eliminare.\n");
+static struct Stanza* genera_random(int nStanze) {
+    srand(time(NULL)); //inizializza il generatore di numeri casuali
+    bool primo = true;
+
+    for (int i = 0; i < nStanze; i++) {
+        struct Stanza* nuova_stanza = (struct Stanza*)malloc(sizeof(struct Stanza)); //allocazione memoria per la stanza
+
+        //controllo se spazio disponibile per nuova stanza esiste
+        if (nuova_stanza == NULL) {
+            printf("Errore nell'allocazione della memoria per la stanza!\n");
+            return NULL; 
+        }
+
+        //assegnazione del tipo di trabocchetto
+        enum Tipo_trabocchetto trabocchetto;
+        int n_random_trabocchetto = rand() % 100;
+
+        if (n_random_trabocchetto < 65) { //65%
+            trabocchetto = nessuno;
+        } else if (n_random_trabocchetto < 75) { //10%
+            trabocchetto = tegola;
+        } else if (n_random_trabocchetto < 84) {//9%
+            trabocchetto = lame;
+        } else if (n_random_trabocchetto < 92) {//8%
+            trabocchetto = caduta;
+        } else { //8%
+            trabocchetto = burrone;
+        }
+
+        //assegnazione del tipo di tesoro
+        enum Tipo_tesoro tesoro;
+        int n_random_tesoro = rand() % 100;
+        if (n_random_tesoro < 20) { //20%
+            tesoro = nessun_tesoro;
+        } else if (n_random_tesoro < 40) { //20%
+            tesoro = verde_veleno;
+        } else if (n_random_tesoro < 60) { //20%
+            tesoro = blu_guarigione;
+        } else if (n_random_tesoro < 75) { //15%
+            tesoro = rosso_aumenta_vita;
+        } else if (n_random_tesoro < 90) { //15%
+            tesoro = burrone;
+        } else { //10%
+            tesoro = scudo;
+        }
+
+        enum Tipo_stanza tipo_stanza = (enum Tipo_stanza)(rand() % 10); //assegnazione tipo stanza
+
+        //assegnazione dati a nuova stanza
+        nuova_stanza->stanza_destra = NULL;
+        nuova_stanza->stanza_sinistra = NULL;
+        nuova_stanza->stanza_sopra = NULL;
+        nuova_stanza->stanza_sotto = NULL;
+        nuova_stanza->tipo_stanza = tipo_stanza;
+        nuova_stanza->tesoro = tesoro;
+        nuova_stanza->trabocchetto = trabocchetto;
+
+        //imposta la nuova stanza come prima stanza, se è la prima
+        if (primo) {
+            pFirst = nuova_stanza;
+            primo = false;
+        } else if (i == nStanze - 1) {
+            //imposta la nuova stanza come ultima stanza, se è l'ultima
+            pUltima = nuova_stanza;
+        }
+    }
+    return pFirst; //ritorna il puntatore alla prima stanza
 }
 
 // Funzione per liberare tutta la mappa
 static void chiudi_mappa() {
-
+    
 }
 
 
@@ -508,7 +578,6 @@ void imposta_gioco() {
         printf("- %s (classe %d)\n", giocatori[i]->nome_giocatore, giocatori[i]->classe_giocatore);
     }
 
-    printf("Numero di giocatori: %d.\n", num_giocatori);
     char scelta = 's';
     bool primo = true;
     printf("Ora il game master creera' la mappa di gioco:\n");
@@ -519,13 +588,16 @@ void imposta_gioco() {
             scanf(" %c", &scelta);  
             if(sceltaSiNo(scelta)){
                 printf("Generazione di 15 stanze casuali...\n");
-                genera_random();  
+                genera_random(15);  
                 printf("Generazione completata.\n");
 
                 printf("Si desidera apportare delle modifiche alla mappa di gioco gia' creata? (s/n)\n");
                 scanf(" %c", &scelta); 
                 if (sceltaSiNo(scelta)) {
                     menu_stanze();  
+                }else{
+                    gioca();
+                    break;
                 }
             }else{
                 menu_stanze();
