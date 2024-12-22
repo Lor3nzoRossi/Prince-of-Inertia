@@ -7,6 +7,8 @@
 #include <time.h>
 #include "gamelib.h"
 
+static int mappa_chiusa = 0; // 0 = mappa aperta, 1 = mappa chiusa
+static int num_stanze = 0; //contatore stanze
 
 static void ins_stanza(void);
 static struct Stanza* genera_random(int nStanze);
@@ -41,15 +43,16 @@ bool sceltaSiNo(char scelta){
  * Stampa il menù delle stanze
  * permettendo la scelta di una delle opzioni
  */
-void menu_stanze(){
+void menu_stanze() {
     int scelta;
+    bool esci = false;
     do {
         // Stampa del menu
         printf("\n==== MENU GESTIONE STANZE ====");
         printf("\n1. Inserisci una nuova stanza");
         printf("\n2. Cancella una stanza");
         printf("\n3. Stampa tutte le stanze");
-        printf("\n4. Genera stanza casuale");
+        printf("\n4. Genera mappa causale");
         printf("\n5. Chiudi la mappa e termina");
         printf("\nSeleziona un'opzione (1-5): ");
 
@@ -68,29 +71,34 @@ void menu_stanze(){
                 break;
             case 4:
                 char sceltaDisclamer = 'n';
-                if(pFirst){
+                if (pFirst) {
                     printf("*ATTENZIONE* se si prosegue le precedenti stanze verranno eliminate, proseguire? (s/n)");
                     scanf(" %c", &sceltaDisclamer);
-                    if(sceltaSiNo(sceltaDisclamer)){
+                    if (sceltaSiNo(sceltaDisclamer)) {
                         genera_random(15);
-                        printf("Stanze generate");
-                    }else{
+                    } else {
                         break;
                     }
-                }else{
+                } else {
                     genera_random(15);
                 }
                 break;
             case 5:
-                chiudi_mappa();
-                printf("\nMappa chiusa. Programma terminato.\n");
+                if (chiudi_mappa()) {
+                    esci = true;
+                } else {
+                    printf("Impossibile terminare la creazione della mappa, numero di stanze insufficenti: %d. Sono necessarie almeno 15 stanze\n", num_stanze);
+                }
                 break;
             default:
                 printf("\nScelta non valida, scegliere tra 1-5\n");
         }
-
-    } while (scelta != 5);
+    } while (!esci); 
+    printf("Terminata la creazione della mappa.\n");
+    gioca();  
+    return;
 }
+
 
 
 /**
@@ -191,9 +199,6 @@ enum Tipo_tesoro scegli_tesoro() {
     return (enum Tipo_tesoro)scelta;
 }
 
-
-
-
 /**
  * Permette di inserire una nuova stanza
  * scegliendone la posizione rispetto all'ultima creata
@@ -225,7 +230,7 @@ static void ins_stanza() {
     bool creata = false;
     do
     {
-        printf("In quale direzione, rispetto all'ultima stnaza, vuoi aggiungere la nuova stanza? (sopra/sotto/sinistra/destra): ");
+        printf("In quale direzione, rispetto all'ultima stanza, vuoi aggiungere la nuova stanza? (sopra/sotto/sinistra/destra): ");
         scanf("%s", direzione);
 
         //inserimento della nuova stanza nella direzione scelta
@@ -268,29 +273,43 @@ static void ins_stanza() {
     
     
     pUltima = nuovaStanza; //impostare la stanza appena creata come l'ultima
+    num_stanze++;
 }
 
 /**
- * da fare
+ * Elimina l'ultima stanza
  */
-static void canc_stanza(struct Stanza* stanza_corrente, char direzione) {
-    //controllo se esistono stanze
-    if (pFirst == NULL) {
-        printf("La mappa è vuota. Impossibile cancellare una stanza.\n");
-        return;
-    }
+static void canc_stanza() {
+    if (pUltima) {
+        struct Stanza* stanza_appoggio = pUltima;
 
-    //controllo se esiste solo una stanza
-    if (
-        pFirst->stanza_destra == NULL && pFirst->stanza_sinistra == NULL &&
-        pFirst->stanza_sopra == NULL && pFirst->stanza_sotto == NULL
-    ) {
-        free(pFirst);
-        pFirst = NULL;
+        if (pUltima->stanza_destra) {
+            pUltima = stanza_appoggio->stanza_destra;
+            free(stanza_appoggio->stanza_destra);
+            stanza_appoggio->stanza_destra = NULL;
+        } else if (pUltima->stanza_sinistra) {
+            pUltima = stanza_appoggio->stanza_sinistra;
+            free(stanza_appoggio->stanza_sinistra);
+            stanza_appoggio->stanza_sinistra = NULL;
+        } else if (pUltima->stanza_sopra) {
+            pUltima = stanza_appoggio->stanza_sopra;
+            free(stanza_appoggio->stanza_sopra);
+            stanza_appoggio->stanza_sopra = NULL;
+        } else if (pUltima->stanza_sotto) {
+            pUltima = stanza_appoggio->stanza_sotto;
+            free(stanza_appoggio->stanza_sotto);
+            stanza_appoggio->stanza_sotto = NULL;
+        } else {
+            free(pUltima);
+            pUltima = NULL;
+        }
         printf("L'ultima stanza è stata cancellata.\n");
-        return;
+    } else {
+        printf("Non ci sono stanze da cancellare.\n");
     }
 }
+
+
 
 /**
  * Recupera il nome del tipo della stanza dato un numero da 0 - 9 (in base alle scelte nel menù)
@@ -415,22 +434,38 @@ void stampa_stanze() {
 
 }
 
-/**
- * Elimina la mappa di gioco, se presente almeno una stanza
- */
-bool elimina_mappa(){
-    bool eliminata = false;
-    if(pFirst){
-        pFirst->stanza_sopra = NULL;
-        pFirst->stanza_sotto = NULL;
-        pFirst->stanza_destra = NULL;
-        pFirst->stanza_sinistra = NULL;
-        pFirst = NULL;
-        eliminata = true;
-    }else{
-        return eliminata;
-    }
-}
+// /**
+//  * Elimina la mappa di gioco, se presente almeno una stanza
+//  * @returns true se la mappa è stata eliminata, false se non ci sono stanze da eliminare
+//  */
+// static bool elimina_mappa() {
+//     struct Stanza* corrente = pFirst;
+//     bool eliminata = false;
+
+//     while (corrente != NULL) {
+//         struct Stanza* stanza_successiva = NULL;
+
+//         if (corrente->stanza_destra) {
+//             stanza_successiva = corrente->stanza_destra;
+//         } else if (corrente->stanza_sinistra) {
+//             stanza_successiva = corrente->stanza_sinistra;
+//         } else if (corrente->stanza_sopra) {
+//             stanza_successiva = corrente->stanza_sopra;
+//         } else if (corrente->stanza_sotto) {
+//             stanza_successiva = corrente->stanza_sotto;
+//         }
+
+//         canc_stanza();
+
+//         corrente = stanza_successiva;
+        
+//         eliminata = true;
+//         num_stanze--;
+//     }
+
+//     return eliminata;
+// }
+
 
 /**
  * Cancella tutte le stanze e crea un numero variabile di nuove stanze
@@ -501,13 +536,20 @@ static struct Stanza* genera_random(int nStanze) {
             //imposta la nuova stanza come ultima stanza, se è l'ultima
             pUltima = nuova_stanza;
         }
+        num_stanze++;
     }
-    return pFirst; //ritorna il puntatore alla prima stanza
 }
 
-// Funzione per liberare tutta la mappa
-static void chiudi_mappa() {
-    
+/**
+ * Termina la creazione della mappa
+ * @returns true se la creazione della mappa è stata terminata, false se è impossibile terminarla
+ */
+static bool chiudi_mappa() {
+    if(num_stanze >= 15){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 

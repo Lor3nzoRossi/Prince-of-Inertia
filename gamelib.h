@@ -5,6 +5,7 @@ le definizioni del tipo delle strutture dati utilizzate in "gamelib.c"*/
 #define MAX_PLAYERS 3
 #include <stdbool.h>
 
+
 //ENUM
 
 enum tipo_giocatore {
@@ -90,8 +91,8 @@ const char* get_tesoro(int nStanza);
 
 void stampa_stanze();
 
-static void chiudi_mappa();
-bool elimina_mappa();
+static bool chiudi_mappa();
+static bool elimina_mappa();
 
 void gioca();  
 void termina_gioco();  
