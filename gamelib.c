@@ -30,7 +30,12 @@ int leggi_numero(const char* messaggio) {
     }
 }
 
-bool sceltaSiNo(char scelta){
+/**
+ * Analizza la scelta 
+ * @returns true se la scelta è 's' o 'S'
+ * @returns false se la scelta è 'n' o 'N'
+ */
+static bool sceltaSiNo(char scelta){
     if(scelta == 's' || scelta == 'S'){
         return true;
     }else if(scelta == 'n' || scelta == 'N'){
@@ -43,11 +48,11 @@ bool sceltaSiNo(char scelta){
  * Stampa il menù delle stanze
  * permettendo la scelta di una delle opzioni
  */
-void menu_stanze() {
+bool menu_stanze() {
     int scelta;
     bool esci = false;
+    printf("Entrato in menu_stanze.\n"); // Debug
     do {
-        // Stampa del menu
         printf("\n==== MENU GESTIONE STANZE ====");
         printf("\n1. Inserisci una nuova stanza");
         printf("\n2. Cancella una stanza");
@@ -58,7 +63,6 @@ void menu_stanze() {
 
         scelta = leggi_numero("");
 
-        // Gestione delle opzioni
         switch (scelta) {
             case 1:
                 ins_stanza();
@@ -93,11 +97,12 @@ void menu_stanze() {
             default:
                 printf("\nScelta non valida, scegliere tra 1-5\n");
         }
-    } while (!esci); 
+    } while (!esci);
     printf("Terminata la creazione della mappa.\n");
-    gioca();  
-    return;
+    gioca();
+    return false;
 }
+
 
 
 
@@ -222,6 +227,7 @@ static void ins_stanza() {
         pFirst = nuovaStanza;
         pUltima = nuovaStanza;
         printf("Prima stanza aggiunta con successo!\n");
+        num_stanze+=1;
         return;
     }
 
@@ -622,13 +628,14 @@ void imposta_gioco() {
 
     char scelta = 's';
     bool primo = true;
+    bool esci = false;
     printf("Ora il game master creera' la mappa di gioco:\n");
-    do
-    {
-        if(primo){
+    do {
+        if (primo) {
+            primo = false;
             printf("Iniziare la creazione della mappa dalla generazione di 15 stanze con dati casuali? (s/n)\n");
             scanf(" %c", &scelta);  
-            if(sceltaSiNo(scelta)){
+            if (sceltaSiNo(scelta)) {
                 printf("Generazione di 15 stanze casuali...\n");
                 genera_random(15);  
                 printf("Generazione completata.\n");
@@ -636,19 +643,26 @@ void imposta_gioco() {
                 printf("Si desidera apportare delle modifiche alla mappa di gioco gia' creata? (s/n)\n");
                 scanf(" %c", &scelta); 
                 if (sceltaSiNo(scelta)) {
-                    menu_stanze();  
-                }else{
+                    if(!menu_stanze()){
+                        esci = true;
+                    } 
+                } else {
                     gioca();
-                    break;
+                    esci = true;
                 }
-            }else{
-                menu_stanze();
+            } else {
+                if(!menu_stanze()){
+                    esci = true;
+                }  
             }
-            primo = false;
-        }else{
-            menu_stanze();
+        } else {
+            if(!menu_stanze()){
+                esci = true;
+            }
         }
-    } while (scelta == 's' || scelta == 'S' || scelta == 'n' || scelta == 'N');
+    } while (!esci);  // Ensure the loop does not re-enter
+
+
 }
 
 
