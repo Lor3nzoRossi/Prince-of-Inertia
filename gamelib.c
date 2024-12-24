@@ -9,10 +9,16 @@
 
 static int mappa_chiusa = 0; // 0 = mappa aperta, 1 = mappa chiusa
 static int num_stanze = 0; //contatore stanze
+static int num_giocatori = 0; //contatore numero di giocatori
 
+static bool chiudi_mappa();
 static void ins_stanza(void);
-static struct Stanza* genera_random(int nStanze);
+static bool sceltaSiNo(char scelta);
+static struct Stanza* genera_random();
 
+static void attiva_trabocchetto(struct Stanza* stanza);
+static void avanza(struct Giocatore* giocatore);
+static void passa(int turno);
 /**
  * Controlla se l'input da tastiera è un numero 
  * e continua a richiedere l'input fino a condizione soddisfatta
@@ -41,7 +47,7 @@ static bool sceltaSiNo(char scelta){
     }else if(scelta == 'n' || scelta == 'N'){
         return false;
     }
-    printf("Scelta non valida, inserire 's' per 'sì' e 'n' per 'no'.");  
+    printf("Scelta non valida, inserire 's' per 'si' e 'n' per 'no'.");  
 }
 
 /**
@@ -79,12 +85,12 @@ bool menu_stanze() {
                     printf("*ATTENZIONE* se si prosegue le precedenti stanze verranno eliminate, proseguire? (s/n)");
                     scanf(" %c", &sceltaDisclamer);
                     if (sceltaSiNo(sceltaDisclamer)) {
-                        genera_random(15);
+                        genera_random();
                     } else {
                         break;
                     }
                 } else {
-                    genera_random(15);
+                    genera_random();
                 }
                 break;
             case 5:
@@ -127,6 +133,8 @@ void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore) {
     giocatore->dadi_difesa = leggi_numero("Inserire il numero di dadi difesa per il giocatore: ");
 
     giocatore->posizione = NULL; //inizializzazione della posizione (di default NULL)
+
+    num_giocatori++;
 }
 
 
@@ -227,7 +235,6 @@ static void ins_stanza() {
         pFirst = nuovaStanza;
         pUltima = nuovaStanza;
         printf("Prima stanza aggiunta con successo!\n");
-        num_stanze+=1;
         return;
     }
 
@@ -477,8 +484,9 @@ void stampa_stanze() {
  * Cancella tutte le stanze e crea un numero variabile di nuove stanze
  * @param nStanze numero di stanze da generare
  */
-static struct Stanza* genera_random(int nStanze) {
+static struct Stanza* genera_random() {
     srand(time(NULL)); //inizializza il generatore di numeri casuali
+    int nStanze = 15;
     bool primo = true;
 
     for (int i = 0; i < nStanze; i++) {
@@ -548,12 +556,15 @@ static struct Stanza* genera_random(int nStanze) {
 
 /**
  * Termina la creazione della mappa
- * @returns true se la creazione della mappa è stata terminata, false se è impossibile terminarla
+ * @returns true se la creazione della mappa può essere terminata
+ * @returns se è impossibile terminarla
  */
 static bool chiudi_mappa() {
     if(num_stanze >= 15){
+        mappa_chiusa = 1;
         return true;
     }else{
+        mappa_chiusa = 0;
         return false;
     }
 }
@@ -637,9 +648,9 @@ void imposta_gioco() {
             scanf(" %c", &scelta);  
             if (sceltaSiNo(scelta)) {
                 printf("Generazione di 15 stanze casuali...\n");
-                genera_random(15);  
+                genera_random();  
                 printf("Generazione completata.\n");
-
+                mappa_chiusa = 1;
                 printf("Si desidera apportare delle modifiche alla mappa di gioco gia' creata? (s/n)\n");
                 scanf(" %c", &scelta); 
                 if (sceltaSiNo(scelta)) {
@@ -665,12 +676,136 @@ void imposta_gioco() {
 
 }
 
+static void attiva_trabocchetto(struct Stanza* stanza) {
+    // Logica per attivare il trabocchetto
+    if (stanza->trabocchetto) {
+        printf("Un trabocchetto è stato attivato nella stanza!\n");
+        // Potresti aggiungere effetti, come danni al giocatore o altri eventi
+    }
+}
+
+static void avanza(struct Giocatore* giocatore) {
+    struct Stanza* stanze_adiacenti[4];
+    int num_stanze_valide = 0; // Conta il numero di stanze valide
+    char* direzioni[4] = {"su", "giù", "destra", "sinistra"};
+    int direzioni_possibili[4];  // Per tenere traccia delle direzioni valide
+
+    // Controlla le stanze adiacenti e aggiungi quelle valide all'array
+    if (giocatore->posizione->stanza_sopra != NULL) {
+        stanze_adiacenti[num_stanze_valide] = giocatore->posizione->stanza_sopra;
+        direzioni_possibili[num_stanze_valide] = 0;
+        num_stanze_valide++;
+    }
+    if (giocatore->posizione->stanza_sotto != NULL) {
+        stanze_adiacenti[num_stanze_valide] = giocatore->posizione->stanza_sotto;
+        direzioni_possibili[num_stanze_valide] = 1;
+        num_stanze_valide++;
+    }
+    if (giocatore->posizione->stanza_destra != NULL) {
+        stanze_adiacenti[num_stanze_valide] = giocatore->posizione->stanza_destra;
+        direzioni_possibili[num_stanze_valide] = 2;
+        num_stanze_valide++;
+    }
+    if (giocatore->posizione->stanza_sinistra != NULL) {
+        stanze_adiacenti[num_stanze_valide] = giocatore->posizione->stanza_sinistra;
+        direzioni_possibili[num_stanze_valide] = 3;
+        num_stanze_valide++;
+    }
+
+    // Mostra le direzioni possibili
+    printf("(%s) In quale direzione ci si vuole muovere? (direzioni possibili: ", giocatore->nome_giocatore);
+    for (int i = 0; i < num_stanze_valide; i++) {
+        printf("%s ", direzioni[direzioni_possibili[i]]);
+        if (i < num_stanze_valide - 1) {
+            printf(", ");
+        }
+    }
+    printf(")\n");
+
+    char scelta[10];
+    bool scelta_valida = false;
+    while (!scelta_valida) {
+        printf("Scegli la direzione (su/giù/destra/sinistra): ");
+        scanf("%s", scelta);
+
+        for (int i = 0; i < num_stanze_valide; i++) {
+            if (strcmp(scelta, direzioni[direzioni_possibili[i]]) == 0) {
+                giocatore->posizione = stanze_adiacenti[i];
+                printf("Ti muovi verso: %s\n", scelta);
+                scelta_valida = true;
+                break;
+            }
+        }
+
+        if (!scelta_valida) {
+            printf("Direzione non valida, per favore scegli tra le direzioni possibili.\n");
+        }
+    }
+
+    // Attiva il trabocchetto della stanza
+    attiva_trabocchetto(giocatore->posizione);
+}
+
+static void passa(int turno) {
+    // Incrementa l'indice del turno per passare al giocatore successivo
+    turno = (turno + 1) % num_giocatori;
+
+    // Stampa chi è il prossimo giocatore che deve agire
+    printf("Il turno è passato a %s.\n", giocatori[turno]->nome_giocatore);
+}
+
 
 /**
  * Funzione per iniziare il gioco
  */
 void gioca() {
-    printf("Inizio del gioco...\n");
+    if(mappa_chiusa == 1){
+        printf("Inizio del gioco...\n");
+        
+        // Inizializzazione posizione giocatori alla prima stanza
+        for(int i = 0; i < num_giocatori; i++){
+            giocatori[i]->posizione = pFirst;
+        }
+        
+        // Array per tracciare l'ordine casuale dei turni
+        int ordine_turni[MAX_PLAYERS];
+
+        for(int i = 0; i < num_giocatori; i++) {
+            ordine_turni[i] = i; 
+        }
+
+        // Mescola l'ordine dei giocatori
+        for(int i = 0; i < num_giocatori; i++) {
+            int j = rand() % num_giocatori; //posizione casuale
+            int temp = ordine_turni[i];
+            ordine_turni[i] = ordine_turni[j];
+            ordine_turni[j] = temp;
+        }
+
+        int turno = 0;
+        while(true) {
+            printf("E' il turno di %s\n", giocatori[ordine_turni[turno]]->nome_giocatore);
+            
+            avanza(giocatori[ordine_turni[turno]]);
+            
+            char scelta;
+            printf("Vuoi passare il turno? (s/n): ");
+            scanf(" %c", &scelta);
+            if(sceltaSiNo(scelta)) {
+                passa(turno);
+            }
+            
+            turno = (turno + 1) % num_giocatori;
+            
+            // // Verifica se il gioco è terminato
+            // if(condizione_fine_gioco()) {
+            //     printf("Il gioco è finito.\n");
+            //     break;
+            // }
+        }
+    } else {
+        printf("Impossibile iniziare il gioco.\n");
+    }
 }
 
 /**

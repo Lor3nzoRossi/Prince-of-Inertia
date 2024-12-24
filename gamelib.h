@@ -91,9 +91,7 @@ const char* get_tesoro(int nStanza);
 
 void stampa_stanze();
 
-static bool sceltaSiNo(char scelta);
-static bool chiudi_mappa();
-static bool elimina_mappa();
+// static bool elimina_mappa();
 
 void gioca();  
 void termina_gioco();  
