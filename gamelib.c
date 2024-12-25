@@ -679,11 +679,33 @@ void imposta_gioco() {
 
 }
 
+/**
+ * Ha la possibilità di fare apparire un nemico
+ * @param ultima true se è l'ultima stanza
+ * @param ultima false se non è l'ultima stanza
+ */
+static void enemy_spawn(bool ultima){
+    if(ultima){
+        printf("Appare Jaffar");
+    }else{
+        srand(time(NULL));
+        int rand_num = rand() % 100;
+
+        if(rand_num<60){ //60%
+            printf("Appare uno scheletro");
+        }else { //40%
+            printf("Appare una guardia");
+        }
+    }
+}
+
+/**
+ * Attiva il trabocchetto di una stanza
+ * @param stanza stanza di cui attivare il trabocchetto
+ */
 static void attiva_trabocchetto(struct Stanza* stanza) {
-    // Logica per attivare il trabocchetto
     if (stanza->trabocchetto) {
-        printf("Un trabocchetto e' stato attivato nella stanza!\n");
-        // Potresti aggiungere effetti, come danni al giocatore o altri eventi
+        printf("Si attiva %s nella stanza!\n", get_trabocchetto(stanza->trabocchetto));
     }
 }
 
@@ -730,8 +752,10 @@ static void avanza(struct Giocatore* giocatore) {
                 printf(", ");
             }
         }
+        printf(")");
         scanf("%s", &scelta);
 
+        //muovi nella direzione scelta
         for (int i = 0; i < num_stanze_valide; i++) {
             if (strcmp(scelta, direzioni[direzioni_possibili[i]]) == 0) {
                 giocatore->posizione = stanze_adiacenti[i];
@@ -741,12 +765,18 @@ static void avanza(struct Giocatore* giocatore) {
             }
         }
 
-        if (!scelta_valida) {
+        if (scelta_valida) {
+            if(giocatore->posizione == pUltima){
+                enemy_spawn(true);
+            }else{
+                enemy_spawn(false);
+            }
+        }else{
             printf("Direzione non valida, per favore scegli tra le direzioni possibili.\n");
         }
     }
 
-    attiva_trabocchetto(giocatore->posizione);
+    attiva_trabocchetto(giocatore->posizione);//attivazione trabocchetto
 }
 
 static void passa(int turno) {
