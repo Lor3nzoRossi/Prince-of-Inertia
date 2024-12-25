@@ -3,6 +3,7 @@ le definizioni del tipo delle strutture dati utilizzate in "gamelib.c"*/
 
 #define GAMELIB_H  
 #define MAX_PLAYERS 3
+#define MIN_STANZE 15
 #include <stdbool.h>
 
 
@@ -56,9 +57,8 @@ struct Stanza {
     enum Tipo_tesoro tesoro;
 };
 
-struct Stanza* pFirst;
-struct Stanza* pUltima;
-
+extern struct Stanza* pFirst;
+extern struct Stanza* pUltima;
 
 struct Giocatore {
     char nome_giocatore[100];

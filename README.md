@@ -15,4 +15,4 @@ game
 
 
 # ESPANSIONI FUTURE
-- Possibilità di generare un numero di stanze fisso con genera_random()
+- Possibilità di generare un numero di stanze variabile con genera_random()

@@ -14,6 +14,7 @@ static int num_giocatori = 0; //contatore numero di giocatori
 static bool chiudi_mappa();
 static void ins_stanza(void);
 static bool sceltaSiNo(char scelta);
+static void stampa_stanza(struct Stanza* stanza);
 static struct Stanza* genera_random();
 
 static void attiva_trabocchetto(struct Stanza* stanza);
@@ -77,7 +78,7 @@ bool menu_stanze() {
                 // canc_stanza();
                 break;
             case 3:
-                stampa_stanze();
+                // stampa_stanze();
                 break;
             case 4:
                 char sceltaDisclamer = 'n';
@@ -316,7 +317,7 @@ static void canc_stanza() {
             free(pUltima);
             pUltima = NULL;
         }
-        printf("L'ultima stanza è stata cancellata.\n");
+        printf("L'ultima stanza e' stata cancellata.\n");
     } else {
         printf("Non ci sono stanze da cancellare.\n");
     }
@@ -401,51 +402,24 @@ const char* get_tesoro(int nStanza) {
 
 
 /**
- * stampa tutte le stanze presenti
+ * stampa tutte le stanze presenti (da fare)
  */
 void stampa_stanze() {
-    //controlla se ci sono stanze
     if (pFirst == NULL) {
-        printf("La lista delle stanze è vuota.\n");
+        printf("La lista delle stanze e' vuota.\n");
         return;
     }
-
-    struct Stanza* corrente = pFirst; //puntatore per scorrere la lista
-    int index = 1; //contatore per numerare le stanze
-    printf("Elenco delle stanze:\n\n");
-    while (corrente != NULL) {
-        if(index == 1){
-            printf("Prima stanza:\n");
-        }
-        printf("Tipo di stanza: %s\n", get_tipoStanza(corrente->tipo_stanza));
-        printf("Trabocchetto: %s\n", get_trabocchetto(corrente->trabocchetto));
-        printf("Tesoro: %s\n\n", get_tesoro(corrente->tesoro));
-        index += 1;
-        //stampa stanza sopra, se presente
-        if (corrente->stanza_sopra) {
-            printf("Stanza sopra:\n");
-            corrente = corrente->stanza_sopra;
-        }
-        //stampa stanza a destra, se presente
-        else if (corrente->stanza_destra) {
-            printf("Stanza a destra:\n");
-            corrente = corrente->stanza_destra;
-        }
-        //stampa stanza sotto, se presente
-        else if (corrente->stanza_sotto) {
-            printf("Stanza sotto:\n");
-            corrente = corrente->stanza_sotto;
-        }
-        //stampa stanza a sinistra, se presente
-        else if (corrente->stanza_sinistra) {
-            printf("Stanza a sinistra:\n");
-            corrente = corrente->stanza_sinistra;
-        } else {
-            break; //se non ci sono stanze adiacenti, termina il ciclo
-        }
-    }
-
 }
+
+static void stampa_stanza(struct Stanza* stanza){
+    printf("Tipo stanza: %s\n", get_tipoStanza(stanza->tipo_stanza));
+    printf("Trabocchetto: %s\n", get_trabocchetto(stanza->trabocchetto));
+    printf("Tesoro: %s\n", get_tesoro(stanza->tesoro));
+}
+
+
+
+
 
 // /**
 //  * Elimina la mappa di gioco, se presente almeno una stanza
@@ -485,55 +459,56 @@ void stampa_stanze() {
  * @param nStanze numero di stanze da generare
  */
 static struct Stanza* genera_random() {
-    srand(time(NULL)); //inizializza il generatore di numeri casuali
-    int nStanze = 15;
+    srand(time(NULL)); 
     bool primo = true;
+    
+    struct Stanza* stanze[MIN_STANZE]; 
+    
+    for (int i = 0; i < MIN_STANZE; i++) {
+        struct Stanza* nuova_stanza = (struct Stanza*)malloc(sizeof(struct Stanza)); //allocazione nuova stanza in memoria
 
-    for (int i = 0; i < nStanze; i++) {
-        struct Stanza* nuova_stanza = (struct Stanza*)malloc(sizeof(struct Stanza)); //allocazione memoria per la stanza
-
-        //controllo se spazio disponibile per nuova stanza esiste
+        //controllo sull'allocamento della nuova stanza in memoria
         if (nuova_stanza == NULL) {
             printf("Errore nell'allocazione della memoria per la stanza!\n");
             return NULL; 
         }
 
-        //assegnazione del tipo di trabocchetto
+        //assegnazione tipo trabocchetto
         enum Tipo_trabocchetto trabocchetto;
         int n_random_trabocchetto = rand() % 100;
 
-        if (n_random_trabocchetto < 65) { //65%
+        if (n_random_trabocchetto < 65) {
             trabocchetto = nessuno;
-        } else if (n_random_trabocchetto < 75) { //10%
+        } else if (n_random_trabocchetto < 75) {
             trabocchetto = tegola;
-        } else if (n_random_trabocchetto < 84) {//9%
+        } else if (n_random_trabocchetto < 84) {
             trabocchetto = lame;
-        } else if (n_random_trabocchetto < 92) {//8%
+        } else if (n_random_trabocchetto < 92) {
             trabocchetto = caduta;
-        } else { //8%
+        } else {
             trabocchetto = burrone;
         }
 
-        //assegnazione del tipo di tesoro
+        //assegnazione tipo tesoro
         enum Tipo_tesoro tesoro;
         int n_random_tesoro = rand() % 100;
-        if (n_random_tesoro < 20) { //20%
+        if (n_random_tesoro < 20) {
             tesoro = nessun_tesoro;
-        } else if (n_random_tesoro < 40) { //20%
+        } else if (n_random_tesoro < 40) {
             tesoro = verde_veleno;
-        } else if (n_random_tesoro < 60) { //20%
+        } else if (n_random_tesoro < 60) {
             tesoro = blu_guarigione;
-        } else if (n_random_tesoro < 75) { //15%
+        } else if (n_random_tesoro < 75) {
             tesoro = rosso_aumenta_vita;
-        } else if (n_random_tesoro < 90) { //15%
+        } else if (n_random_tesoro < 90) {
             tesoro = burrone;
-        } else { //10%
+        } else {
             tesoro = scudo;
         }
 
-        enum Tipo_stanza tipo_stanza = (enum Tipo_stanza)(rand() % 10); //assegnazione tipo stanza
+        //assegnazione tipo stanza 
+        enum Tipo_stanza tipo_stanza = (enum Tipo_stanza)(rand() % 10);
 
-        //assegnazione dati a nuova stanza
         nuova_stanza->stanza_destra = NULL;
         nuova_stanza->stanza_sinistra = NULL;
         nuova_stanza->stanza_sopra = NULL;
@@ -542,17 +517,45 @@ static struct Stanza* genera_random() {
         nuova_stanza->tesoro = tesoro;
         nuova_stanza->trabocchetto = trabocchetto;
 
-        //imposta la nuova stanza come prima stanza, se è la prima
+        stanze[i] = nuova_stanza;
+
+        //collegamento stanza ad una casuale
+        if (i > 0) {
+            int direzione = rand() % 4;
+            switch (direzione) {
+                case 0: //sopra
+                    stanze[i-1]->stanza_sotto = nuova_stanza;
+                    nuova_stanza->stanza_sopra = stanze[i-1];
+                    break;
+                case 1: //sotto
+                    stanze[i-1]->stanza_sopra = nuova_stanza;
+                    nuova_stanza->stanza_sotto = stanze[i-1];
+                    break;
+                case 2: //destra
+                    stanze[i-1]->stanza_sinistra = nuova_stanza;
+                    nuova_stanza->stanza_destra = stanze[i-1];
+                    break;
+                case 3: //sinistra
+                    stanze[i-1]->stanza_destra = nuova_stanza;
+                    nuova_stanza->stanza_sinistra = stanze[i-1];
+                    break;
+            }
+        }
+
+        //prima stanza
         if (primo) {
             pFirst = nuova_stanza;
             primo = false;
-        } else if (i == nStanze - 1) {
-            //imposta la nuova stanza come ultima stanza, se è l'ultima
+        } else if (i == MIN_STANZE - 1) { //ultima stanza
             pUltima = nuova_stanza;
         }
+
         num_stanze++;
     }
+
+    return pFirst;
 }
+
 
 /**
  * Termina la creazione della mappa
@@ -560,7 +563,7 @@ static struct Stanza* genera_random() {
  * @returns se è impossibile terminarla
  */
 static bool chiudi_mappa() {
-    if(num_stanze >= 15){
+    if(num_stanze >= MIN_STANZE){
         mappa_chiusa = 1;
         return true;
     }else{
@@ -626,7 +629,7 @@ void imposta_gioco() {
             return;
         }
 
-        printf("Per un solo giocatore, verra' attribuita l'unica classe disponibile è il principe\n");
+        printf("Per un solo giocatore, verra' attribuita l'unica classe disponibile e' il principe\n");
         giocatori[0]->classe_giocatore = 0; //impostazione classe a principe
 
         inizializza_giocatore(giocatori[0], 0);
@@ -679,18 +682,19 @@ void imposta_gioco() {
 static void attiva_trabocchetto(struct Stanza* stanza) {
     // Logica per attivare il trabocchetto
     if (stanza->trabocchetto) {
-        printf("Un trabocchetto è stato attivato nella stanza!\n");
+        printf("Un trabocchetto e' stato attivato nella stanza!\n");
         // Potresti aggiungere effetti, come danni al giocatore o altri eventi
     }
 }
 
 static void avanza(struct Giocatore* giocatore) {
     struct Stanza* stanze_adiacenti[4];
-    int num_stanze_valide = 0; // Conta il numero di stanze valide
-    char* direzioni[4] = {"su", "giù", "destra", "sinistra"};
-    int direzioni_possibili[4];  // Per tenere traccia delle direzioni valide
+    int num_stanze_valide = 0; //conta il numero di stanze valide
+    char* direzioni[4] = {"su", "giu", "destra", "sinistra"};
+    int direzioni_possibili[4];  //direzioni valide
 
-    // Controlla le stanze adiacenti e aggiungi quelle valide all'array
+    printf("trabocchetto giocatore: %d\n", giocatore->posizione->trabocchetto);
+    //controlla le stanze adiacenti e aggiungi quelle valide all'array
     if (giocatore->posizione->stanza_sopra != NULL) {
         stanze_adiacenti[num_stanze_valide] = giocatore->posizione->stanza_sopra;
         direzioni_possibili[num_stanze_valide] = 0;
@@ -712,21 +716,21 @@ static void avanza(struct Giocatore* giocatore) {
         num_stanze_valide++;
     }
 
-    // Mostra le direzioni possibili
-    printf("(%s) In quale direzione ci si vuole muovere? (direzioni possibili: ", giocatore->nome_giocatore);
-    for (int i = 0; i < num_stanze_valide; i++) {
-        printf("%s ", direzioni[direzioni_possibili[i]]);
-        if (i < num_stanze_valide - 1) {
-            printf(", ");
-        }
-    }
-    printf(")\n");
-
     char scelta[10];
     bool scelta_valida = false;
+    if(num_stanze_valide<=0){
+        printf("non ci sono stanze valide\n");
+    }
     while (!scelta_valida) {
-        printf("Scegli la direzione (su/giù/destra/sinistra): ");
-        scanf("%s", scelta);
+        //direzioni possibili
+        printf("(%s) In quale direzione ci si vuole muovere? (direzioni possibili: ", giocatore->nome_giocatore);
+        for (int i = 0; i < num_stanze_valide; i++) {
+            printf("%s ", direzioni[direzioni_possibili[i]]);
+            if (i < num_stanze_valide - 1) {
+                printf(", ");
+            }
+        }
+        scanf("%s", &scelta);
 
         for (int i = 0; i < num_stanze_valide; i++) {
             if (strcmp(scelta, direzioni[direzioni_possibili[i]]) == 0) {
@@ -742,16 +746,13 @@ static void avanza(struct Giocatore* giocatore) {
         }
     }
 
-    // Attiva il trabocchetto della stanza
     attiva_trabocchetto(giocatore->posizione);
 }
 
 static void passa(int turno) {
-    // Incrementa l'indice del turno per passare al giocatore successivo
-    turno = (turno + 1) % num_giocatori;
+    turno = (turno + 1) % num_giocatori; //incremento del turno
 
-    // Stampa chi è il prossimo giocatore che deve agire
-    printf("Il turno è passato a %s.\n", giocatori[turno]->nome_giocatore);
+    printf("Il turno e' passato a %s.\n", giocatori[turno]->nome_giocatore);
 }
 
 
@@ -762,21 +763,21 @@ void gioca() {
     if(mappa_chiusa == 1){
         printf("Inizio del gioco...\n");
         
-        // Inizializzazione posizione giocatori alla prima stanza
+        //inizializzazione posizione giocatori alla prima stanza
         for(int i = 0; i < num_giocatori; i++){
             giocatori[i]->posizione = pFirst;
         }
         
-        // Array per tracciare l'ordine casuale dei turni
+        //array per tracciare l'ordine casuale dei turni
         int ordine_turni[MAX_PLAYERS];
 
         for(int i = 0; i < num_giocatori; i++) {
             ordine_turni[i] = i; 
         }
 
-        // Mescola l'ordine dei giocatori
+        //ordine dei turni random
         for(int i = 0; i < num_giocatori; i++) {
-            int j = rand() % num_giocatori; //posizione casuale
+            int j = rand() % num_giocatori;
             int temp = ordine_turni[i];
             ordine_turni[i] = ordine_turni[j];
             ordine_turni[j] = temp;
