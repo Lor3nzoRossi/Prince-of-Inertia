@@ -19,7 +19,7 @@ static struct Stanza* genera_random();
 
 static void attiva_trabocchetto(struct Stanza* stanza);
 static void avanza(struct Giocatore* giocatore);
-static void passa(int turno);
+static void passa(int* turno);
 /**
  * Controlla se l'input da tastiera è un numero 
  * e continua a richiedere l'input fino a condizione soddisfatta
@@ -686,15 +686,15 @@ void imposta_gioco() {
  */
 static void enemy_spawn(bool ultima){
     if(ultima){
-        printf("Appare Jaffar");
+        printf("Appare Jaffar\n");
     }else{
         srand(time(NULL));
         int rand_num = rand() % 100;
 
         if(rand_num<60){ //60%
-            printf("Appare uno scheletro");
+            printf("Appare uno scheletro\n");
         }else { //40%
-            printf("Appare una guardia");
+            printf("Appare una guardia\n");
         }
     }
 }
@@ -715,7 +715,6 @@ static void avanza(struct Giocatore* giocatore) {
     char* direzioni[4] = {"su", "giu", "destra", "sinistra"};
     int direzioni_possibili[4];  //direzioni valide
 
-    printf("trabocchetto giocatore: %d\n", giocatore->posizione->trabocchetto);
     //controlla le stanze adiacenti e aggiungi quelle valide all'array
     if (giocatore->posizione->stanza_sopra != NULL) {
         stanze_adiacenti[num_stanze_valide] = giocatore->posizione->stanza_sopra;
@@ -745,14 +744,14 @@ static void avanza(struct Giocatore* giocatore) {
     }
     while (!scelta_valida) {
         //direzioni possibili
-        printf("(%s) In quale direzione ci si vuole muovere? (direzioni possibili: ", giocatore->nome_giocatore);
+        printf("(%s) In quale direzione ci si vuole muovere? ( direzioni possibili: ", giocatore->nome_giocatore);
         for (int i = 0; i < num_stanze_valide; i++) {
             printf("%s ", direzioni[direzioni_possibili[i]]);
             if (i < num_stanze_valide - 1) {
                 printf(", ");
             }
         }
-        printf(")");
+        printf(") ");
         scanf("%s", &scelta);
 
         //muovi nella direzione scelta
@@ -779,10 +778,41 @@ static void avanza(struct Giocatore* giocatore) {
     attiva_trabocchetto(giocatore->posizione);//attivazione trabocchetto
 }
 
-static void passa(int turno) {
-    turno = (turno + 1) % num_giocatori; //incremento del turno
+/**
+ * Incrementa il turno di gioco
+ * @param turno turno di gioco da incrementare
+ */
+static void passa(int* turno) {
+    *turno = (*turno + 1) % num_giocatori; //incremento turno
 
-    printf("Il turno e' passato a %s.\n", giocatori[turno]->nome_giocatore);
+    printf("Il turno e' passato a %s.\n", giocatori[*turno]->nome_giocatore);
+}
+
+
+/**
+ * Stampa l'ordine dei turni di gioco
+ * @param ordine_turni array contenente l'ordine dei turni 
+ */
+static void stampa_turni(int ordine_turni[]) {
+    printf("Ordine di gioco:\n");
+    for (int i = 0; i < num_giocatori; i++) {
+        printf("%d) %s\n", i + 1, giocatori[ordine_turni[i]]->nome_giocatore); // corrected index for 1-based counting
+    }
+}
+
+/**
+ * Randomizza i turni di gioco dei giocatori
+ * @param ordine_turni array che tiene traccia dell'ordine dei turni
+ */
+static void randomize_turns(int ordine_turni[MAX_PLAYERS]) {
+    printf("Decisione del nuovo ordine di gioco...\n");
+    for (int i = 0; i < num_giocatori; i++) {
+        int j = rand() % num_giocatori;
+        int temp = ordine_turni[i];
+        ordine_turni[i] = ordine_turni[j];
+        ordine_turni[j] = temp;
+    }
+    stampa_turni(ordine_turni);
 }
 
 
@@ -805,13 +835,7 @@ void gioca() {
             ordine_turni[i] = i; 
         }
 
-        //ordine dei turni random
-        for(int i = 0; i < num_giocatori; i++) {
-            int j = rand() % num_giocatori;
-            int temp = ordine_turni[i];
-            ordine_turni[i] = ordine_turni[j];
-            ordine_turni[j] = temp;
-        }
+        randomize_turns(ordine_turni);
 
         int turno = 0;
         while(true) {
@@ -823,11 +847,26 @@ void gioca() {
             printf("Vuoi passare il turno? (s/n): ");
             scanf(" %c", &scelta);
             if(sceltaSiNo(scelta)) {
-                passa(turno);
+                if(turno >= num_giocatori - 1){
+                    printf("Rotazione conclusa.\n");
+                    randomize_turns(ordine_turni); //nuova randomizzazione dei turni a fine rotazione
+                    turno = 0;
+                }else{
+                    passa(&turno);
+                }
             }
             
-            turno = (turno + 1) % num_giocatori;
             
+
+            
+
+
+
+
+
+
+
+
             // // Verifica se il gioco è terminato
             // if(condizione_fine_gioco()) {
             //     printf("Il gioco è finito.\n");
