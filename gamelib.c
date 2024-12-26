@@ -680,15 +680,56 @@ void imposta_gioco() {
 }
 
 /**
+ * Determina chi inizia ad attaccare e difendere per primo nel combattimento
+ * @param giocatore giocatore che deve combattere
+ * @param tipo_nemico stringa che contiene il tipo di nemico
+ * @returns true se inizia ad attaccare il giocatore
+ * @returns false se inizia ad attaccare il nemico
+ */
+static bool inizio_combattimento(struct Giocatore* giocatore, char tipo_nemico[10]){
+    int dado_giocatore = 0;
+    int dado_nemico = 0;
+    printf("(%s)Lancia il dado...\n", giocatore->nome_giocatore);
+    dado_giocatore = rand() % 6 + 1;
+    printf("Il giocatore totalizza %d\n", dado_giocatore);
+    printf("(scheletro)Lancia il dado...\n");
+    dado_nemico = rand() % 6 + 1;
+    printf("%s totalizza %d\n", tipo_nemico, dado_giocatore);
+    if(dado_giocatore > dado_nemico){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+static void combatti_scheletro(struct Giocatore* giocatore){
+    printf("Lancio del dado per determinare chi inizia ad attaccare...\n");
+    if(inizio_combattimento(giocatore, "scheletro")){
+        
+    }
+}
+
+static void combatti(struct Giocatore* giocatore, char tipo_nemico[10]) {
+    if(strcmp(tipo_nemico, "scheletro") == 0){
+
+    }else if(strcmp(tipo_nemico, "guardia") == 0){
+
+    }else if(strcmp(tipo_nemico, "Jaffar") == 0){
+
+    }else{
+        printf("Tipo di nemico sconosciuto.");
+    }
+}
+
+/**
  * Ha la possibilità di fare apparire un nemico
  * @param ultima true se è l'ultima stanza
  * @param ultima false se non è l'ultima stanza
  */
-static void enemy_spawn(bool ultima){
+static void enemy_spawn(struct Giocatore* giocatore, bool ultima){
     if(ultima){
         printf("Appare Jaffar\n");
     }else{
-        srand(time(NULL));
         int rand_num = rand() % 100;
 
         if(rand_num<60){ //60%
@@ -766,9 +807,9 @@ static void avanza(struct Giocatore* giocatore) {
 
         if (scelta_valida) {
             if(giocatore->posizione == pUltima){
-                enemy_spawn(true);
+                enemy_spawn(giocatore ,true);
             }else{
-                enemy_spawn(false);
+                enemy_spawn(giocatore, false);
             }
         }else{
             printf("Direzione non valida, per favore scegli tra le direzioni possibili.\n");
