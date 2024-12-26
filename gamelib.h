@@ -70,6 +70,25 @@ struct Giocatore {
     unsigned char dadi_difesa;
 };
 
+struct Scheletro {
+    unsigned char p_vita;
+    unsigned char dadi_attacco;
+    unsigned char dadi_difesa;
+};
+
+struct Guardia {
+    unsigned char p_vita;
+    unsigned char dadi_attacco;
+    unsigned char dadi_difesa;
+};
+
+struct Jaffar {
+    unsigned char p_vita;
+    unsigned char dadi_attacco; 
+    unsigned char dadi_difesa;
+};
+
+
 static struct Giocatore* giocatori[MAX_PLAYERS];
 
 //FUNZIONI

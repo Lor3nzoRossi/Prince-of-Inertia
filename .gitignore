@@ -9,3 +9,7 @@ gamelib.o
 APPUNTI.md
 
 gamelib.h.gch
+
+.gitignore
+
+.vscode/easycode.ignore

@@ -720,6 +720,7 @@ static void combatti_scheletro(struct Giocatore* giocatore){
     printf("Lancio del dado per determinare chi inizia ad attaccare...\n");
     if(inizio_combattimento(giocatore, "scheletro")){
         printf("Il giocatore vince il sorteggio!\n");
+        
     }else{
         printf("Lo scheletro vince il sorteggio!\n");
     }
