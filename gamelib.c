@@ -686,32 +686,53 @@ void imposta_gioco() {
  * @returns true se inizia ad attaccare il giocatore
  * @returns false se inizia ad attaccare il nemico
  */
-static bool inizio_combattimento(struct Giocatore* giocatore, char tipo_nemico[10]){
+static bool inizio_combattimento(struct Giocatore* giocatore, char* tipo_nemico) {
     int dado_giocatore = 0;
     int dado_nemico = 0;
-    printf("(%s)Lancia il dado...\n", giocatore->nome_giocatore);
-    dado_giocatore = rand() % 6 + 1;
-    printf("Il giocatore totalizza %d\n", dado_giocatore);
-    printf("(scheletro)Lancia il dado...\n");
-    dado_nemico = rand() % 6 + 1;
-    printf("%s totalizza %d\n", tipo_nemico, dado_giocatore);
-    if(dado_giocatore > dado_nemico){
-        return true;
-    }else{
-        return false;
-    }
+
+    do {
+        printf("(%s) Lancia il dado...\n", giocatore->nome_giocatore);
+        dado_giocatore = rand() % 6 + 1; // lancio dado giocatore
+        printf("Il giocatore totalizza %d\n", dado_giocatore);
+
+        printf("(%s) Lancia il dado...\n", tipo_nemico);
+        dado_nemico = rand() % 6 + 1; // lancio dado nemico
+        printf("%s totalizza %d\n", tipo_nemico, dado_nemico);
+
+        if (dado_giocatore > dado_nemico) {
+            return true; // true se vince il giocatore
+        } else if (dado_giocatore < dado_nemico) {
+            return false; // false se vince il nemico
+        } else {
+            printf("Il risultato è un pareggio, la procedura verrà ripetuta.\n");
+        }
+    } while (dado_giocatore == dado_nemico);
+
+    return false;
 }
 
+
+/**
+ * Performa il combattimento contro uno scheletro
+ * @param giocatore giocatore che deve combattere
+ */
 static void combatti_scheletro(struct Giocatore* giocatore){
     printf("Lancio del dado per determinare chi inizia ad attaccare...\n");
     if(inizio_combattimento(giocatore, "scheletro")){
-        
+        printf("Il giocatore vince il sorteggio!\n");
+    }else{
+        printf("Lo scheletro vince il sorteggio!\n");
     }
 }
 
-static void combatti(struct Giocatore* giocatore, char tipo_nemico[10]) {
+/**
+ * Performa il combattimento contro un nemico
+ * @param giocatore giocatore che deve combattere
+ * @param tipo_nemico tipo di nemico
+ */
+static void combatti(struct Giocatore* giocatore, char* tipo_nemico) {
     if(strcmp(tipo_nemico, "scheletro") == 0){
-
+        combatti_scheletro(giocatore);
     }else if(strcmp(tipo_nemico, "guardia") == 0){
 
     }else if(strcmp(tipo_nemico, "Jaffar") == 0){
@@ -729,13 +750,16 @@ static void combatti(struct Giocatore* giocatore, char tipo_nemico[10]) {
 static void enemy_spawn(struct Giocatore* giocatore, bool ultima){
     if(ultima){
         printf("Appare Jaffar\n");
+        combatti(giocatore, "Jaffar");
     }else{
         int rand_num = rand() % 100;
 
         if(rand_num<60){ //60%
             printf("Appare uno scheletro\n");
+            combatti(giocatore, "scheletro");
         }else { //40%
             printf("Appare una guardia\n");
+            combatti(giocatore, "guardia");
         }
     }
 }
