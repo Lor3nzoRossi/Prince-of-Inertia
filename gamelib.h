@@ -70,21 +70,10 @@ struct Giocatore {
     unsigned char dadi_difesa;
 };
 
-struct Scheletro {
+struct Nemico {
+    char* nome_nemico;
     unsigned char p_vita;
     unsigned char dadi_attacco;
-    unsigned char dadi_difesa;
-};
-
-struct Guardia {
-    unsigned char p_vita;
-    unsigned char dadi_attacco;
-    unsigned char dadi_difesa;
-};
-
-struct Jaffar {
-    unsigned char p_vita;
-    unsigned char dadi_attacco; 
     unsigned char dadi_difesa;
 };
 
