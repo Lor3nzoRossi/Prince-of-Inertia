@@ -26,6 +26,7 @@ static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difen
 static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore);
 static void difesa_nemico(int danni_inflitti, struct Nemico* nemico);
 static void difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore);
+
 /**
  * Controlla se l'input da tastiera è un numero 
  * e continua a richiedere l'input fino a condizione soddisfatta
@@ -744,6 +745,7 @@ static bool sorteggio_combattimento(struct Giocatore* giocatore, struct Nemico* 
  */
 static void difesa_nemico(int danni_inflitti, struct Nemico* nemico) {
     int dado_difesa = rand() % 6 + 1;
+    printf("\n||%s DIFENDE||\n", nemico->nome_nemico);
     printf("%s tira dado difesa: %d\n", nemico->nome_nemico, dado_difesa);
 
     int danni_neutralizzati = 0;
@@ -777,6 +779,7 @@ static void difesa_nemico(int danni_inflitti, struct Nemico* nemico) {
  */
 static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore) {
     int dado_attacco = rand() % 6 + 1;
+    printf("\n||%s ATTACCA||\n", attaccante->nome_nemico);
     printf("%s tira dado attacco: %d\n", attaccante->nome_nemico, dado_attacco);
 
     int danni_inflitti = 0;
@@ -797,11 +800,6 @@ static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensor
         printf("Colpo non andato a segno\n");
         attaccante->dadi_attacco--;
         stampa_infoNemico(attaccante);
-        if(difensore->dadi_attacco>0){
-            attacco_giocatore(difensore, attaccante);
-        }else{
-            printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", difensore->nome_giocatore);
-        }
     }
 }
 /**
@@ -811,6 +809,7 @@ static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensor
  */
 static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore) {
     int dado_attacco = rand() % 6 + 1;
+    printf("\n||%s ATTACCA||\n", attaccante->nome_giocatore);
     printf("%s tira dado attacco: %d\n", attaccante->nome_giocatore, dado_attacco);
 
     int danni_inflitti = 0; 
@@ -829,11 +828,6 @@ static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difen
         printf("Colpo non andato a segno\n");
         attaccante->dadi_attacco--; //sottrazione di un dado di attacco
         stampa_infoGiocatore(attaccante);
-        if(difensore->dadi_attacco>0){
-            attacco_nemico(difensore, attaccante);
-        }else{
-            printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", difensore->nome_nemico);
-        }
     }
 }
 
@@ -844,6 +838,7 @@ static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difen
  */
 static void difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore) {
     int dado_difesa = rand() % 6 + 1;
+    printf("\n||%s DIFENDE||\n", giocatore->nome_giocatore);
     printf("Giocatore tira dado difesa: %d\n", dado_difesa);
 
     int danni_neutralizzati = 0;
@@ -918,15 +913,15 @@ static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
             }
         }else{
             printf("%s vince il sorteggio! Quindi attacchera' per primo\n", nemico->nome_nemico);
-            if(giocatore->dadi_attacco>0){
-                attacco_giocatore(giocatore, nemico);
-            }else{
-                printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", giocatore->nome_giocatore);
-            }
             if(nemico->dadi_attacco>0){
                 attacco_nemico(nemico, giocatore);
             }else{
                 printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", nemico->nome_nemico);
+            }
+            if(giocatore->dadi_attacco>0){
+                attacco_giocatore(giocatore, nemico);
+            }else{
+                printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", giocatore->nome_giocatore);
             }
         }
         //controllo se entrambi i combattenti sono ancora vivi
