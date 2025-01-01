@@ -18,3 +18,4 @@ game
 - Possibilità di generare un numero di stanze variabile con genera_random()
 - Possibilità di tirare un dado quando tutti i giocatori sono morti, con la possibilità in caso positivo di respawn di uno dei giocatori
 - Possibilità di rianimare un compagno se si torna nella stessa stanza in cui è morto
+- Usare sleep per aspettare dove serve
