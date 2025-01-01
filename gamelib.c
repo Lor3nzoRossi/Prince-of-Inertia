@@ -737,7 +737,11 @@ static bool sorteggio_combattimento(struct Giocatore* giocatore, struct Nemico* 
     return false;
 }
 
-// Funzione di difesa del nemico
+/**
+ * Effettua la procedura di difesa del nemico
+ * @param danni_inflitti danni da difendere
+ * @param nemico nemico che si deve difendere
+ */
 static void difesa_nemico(int danni_inflitti, struct Nemico* nemico) {
     int dado_difesa = rand() % 6 + 1;
     printf("%s tira dado difesa: %d\n", nemico->nome_nemico, dado_difesa);
@@ -766,7 +770,11 @@ static void difesa_nemico(int danni_inflitti, struct Nemico* nemico) {
     stampa_infoNemico(nemico);
 }
 
-// Funzione di attacco del nemico
+/**
+ * Effettua la procedura di attacco del nemico
+ * @param attaccante nemico attaccante
+ * @param difensore giocatore difensore
+ */
 static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore) {
     int dado_attacco = rand() % 6 + 1;
     printf("%s tira dado attacco: %d\n", attaccante->nome_nemico, dado_attacco);
@@ -796,8 +804,11 @@ static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensor
         }
     }
 }
-
-// Funzione di attacco del giocatore
+/**
+ * Effettua la procedura di attacco del giocatore
+ * @param attaccante giocatore attaccante
+ * @param difensore nemico difensore
+ */
 static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore) {
     int dado_attacco = rand() % 6 + 1;
     printf("%s tira dado attacco: %d\n", attaccante->nome_giocatore, dado_attacco);
@@ -826,7 +837,11 @@ static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difen
     }
 }
 
-// Funzione di difesa del giocatore
+/**
+ * Effettua la procedura di difesa del giocatore
+ * @param danni_inflitti danni da difendere
+ * @param giocatore giocatore che si deve difendere
+ */
 static void difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore) {
     int dado_difesa = rand() % 6 + 1;
     printf("Giocatore tira dado difesa: %d\n", dado_difesa);
@@ -856,7 +871,11 @@ static void difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore) {
     stampa_infoGiocatore(giocatore);
 }
 
-
+/**
+ * Inizia la procedura di combattimento di un giocatore contro un nemico
+ * @param giocatore giocatore 
+ * @param tipo_nemico tipologia di nemico da affrontare
+ */
 static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
     char scelta = 'n';
     bool pronto = false;
@@ -920,12 +939,14 @@ static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
             }while(!pronto);
         }
     }
-    while(giocatore->p_vita>0 || nemico->p_vita>0);
+    while(giocatore->p_vita>0 && nemico->p_vita>0 && giocatore->dadi_attacco > 0 || nemico->dadi_attacco > 0);
     printf("\n|| COMBATTIMENTO TERMINATO ||\n");
     if(giocatore->p_vita <= 0){
         printf("%s è stato ucciso.\n", giocatore->nome_giocatore);
     }else if(nemico->p_vita <= 0){
         printf("%s è stato ucciso.\n", nemico->nome_nemico);
+    }else{ //nel caso nessuno sia stato ucciso
+        
     }
 }
 
