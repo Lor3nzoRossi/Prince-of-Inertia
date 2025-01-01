@@ -22,10 +22,10 @@ static void avanza(struct Giocatore* giocatore);
 static void passa(int* turno);
 
 static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico);
-static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore);
-static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore);
-static void difesa_nemico(int danni_inflitti, struct Nemico* nemico);
-static void difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore);
+static int attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore);
+static int attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore);
+static int difesa_nemico(int danni_inflitti, struct Nemico* nemico);
+static int difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore);
 
 /**
  * Controlla se l'input da tastiera è un numero 
@@ -742,128 +742,158 @@ static bool sorteggio_combattimento(struct Giocatore* giocatore, struct Nemico* 
  * Effettua la procedura di difesa del nemico
  * @param danni_inflitti danni da difendere
  * @param nemico nemico che si deve difendere
+ * @returns danni neutralizzati dalla difesa
  */
-static void difesa_nemico(int danni_inflitti, struct Nemico* nemico) {
-    int dado_difesa = rand() % 6 + 1;
-    printf("\n||%s DIFENDE||\n", nemico->nome_nemico);
-    printf("%s tira dado difesa: %d\n", nemico->nome_nemico, dado_difesa);
-
+static int difesa_nemico(int danni_inflitti, struct Nemico* nemico) {
     int danni_neutralizzati = 0;
-    if (dado_difesa >= 4) { //parata riuscita
-        if (dado_difesa == 6) {
-            danni_neutralizzati = 2; //critico
-            printf("Critico di difesa! Colpo neutralizzato: 2\n");
-        } else {
-            danni_neutralizzati = 1; //non critico
-            printf("Colpo neutralizzato: 1\n");
-        }
-    } else {
-        printf("Nessuna parata.\n");
-    }
+    if(nemico->p_vita>0){
+        printf("\n||DIFESA DI %s||\n", nemico->nome_nemico);
+        if(nemico->dadi_difesa>0){
+            if(danni_inflitti>0){
+                int dado_difesa = rand() % 6 + 1;
+                printf("%s tira dado difesa: %d\n", nemico->nome_nemico, dado_difesa);
 
-    int danni_effettivi = danni_inflitti - danni_neutralizzati;
-    if (danni_effettivi > 0) {
-        nemico->p_vita -= danni_effettivi;
-        printf("Nemico subisce %d danni.\n", danni_effettivi);
-    } else {
-        printf("Il nemico para completamente il colpo!\n");
+                if (dado_difesa >= 4) { //parata riuscita
+                    if (dado_difesa == 6) {
+                        danni_neutralizzati = 2; //critico
+                        printf("Critico di difesa!\n");
+                    } else {
+                        danni_neutralizzati = 1; //non critico
+                    }
+                } else {
+                    printf("Nessuna parata.\n");
+                }
+
+                int danni_effettivi = danni_inflitti - danni_neutralizzati;
+                if (danni_neutralizzati < danni_inflitti) {
+                    nemico->p_vita -= danni_effettivi;
+                    printf("%s subisce %d danni.\n", nemico->nome_nemico, danni_effettivi);
+                } else {
+                    printf("%s para completamente il colpo!\n", nemico->nome_nemico);
+                }
+                nemico->dadi_difesa--;
+                stampa_infoNemico(nemico);
+            }else{
+                printf("Nessun danno da difendere\n");
+            }
+        }else{
+            printf("%s non può difendere: dadi di difesa insufficienti (%d)", nemico->nome_nemico, nemico->dadi_difesa);
+        }
     }
-    nemico->dadi_difesa--;
-    stampa_infoNemico(nemico);
+    return danni_neutralizzati;
 }
 
 /**
  * Effettua la procedura di attacco del nemico
  * @param attaccante nemico attaccante
  * @param difensore giocatore difensore
+ * @returns danni inflitti
  */
-static void attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore) {
-    int dado_attacco = rand() % 6 + 1;
-    printf("\n||%s ATTACCA||\n", attaccante->nome_nemico);
-    printf("%s tira dado attacco: %d\n", attaccante->nome_nemico, dado_attacco);
-
+static int attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore) {
     int danni_inflitti = 0;
-    if (dado_attacco >= 4) { //riuscito
-        if (dado_attacco == 6) {
-            danni_inflitti = 2; //critico
-        } else {
-            danni_inflitti = 1; //non critico
-        }
-        attaccante->dadi_attacco--;
-        stampa_infoNemico(attaccante);
-        if(difensore->dadi_difesa>0){
-            difesa_giocatore(danni_inflitti, difensore);
+    if(attaccante->p_vita>0 && difensore->p_vita>0){
+        printf("\n||ATTACCO DI %s||\n", attaccante->nome_nemico);
+        if(attaccante->dadi_attacco>0){
+            int dado_attacco = rand() % 6 + 1;
+            printf("%s tira dado attacco: %d\n", attaccante->nome_nemico, dado_attacco);
+
+            if (dado_attacco >= 4) { //riuscito
+                if (dado_attacco == 6) {
+                    danni_inflitti = 2; //critico
+                } else {
+                    danni_inflitti = 1; //non critico
+                }
+                attaccante->dadi_attacco--;
+                stampa_infoNemico(attaccante);
+            } else {
+                printf("Colpo non andato a segno\n");
+                attaccante->dadi_attacco--;
+                stampa_infoNemico(attaccante);
+            }
         }else{
-            printf("%s non puo' difendere! Dadi di difesa insufficenti...\n", difensore->nome_giocatore);
+            printf("%s non può attaccare: dadi insufficienti (%d)\n", attaccante->nome_nemico, attaccante->dadi_attacco);
         }
-    } else {
-        printf("Colpo non andato a segno\n");
-        attaccante->dadi_attacco--;
-        stampa_infoNemico(attaccante);
     }
+    return danni_inflitti;
 }
 /**
  * Effettua la procedura di attacco del giocatore
  * @param attaccante giocatore attaccante
  * @param difensore nemico difensore
+ * @returns danni inflitti
  */
-static void attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore) {
-    int dado_attacco = rand() % 6 + 1;
-    printf("\n||%s ATTACCA||\n", attaccante->nome_giocatore);
-    printf("%s tira dado attacco: %d\n", attaccante->nome_giocatore, dado_attacco);
-
+static int attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore) {
     int danni_inflitti = 0; 
-    if (dado_attacco >= 4) { //colpo riuscito
-        if (dado_attacco == 6) {
-            danni_inflitti = 2; //critico
-        } else {
-            danni_inflitti = 1; //non critico
+    if(attaccante->p_vita>0 && difensore->p_vita>0){
+        printf("\n||ATTACCO DI %s||\n", attaccante->nome_giocatore);
+        if(attaccante->dadi_attacco>0){
+            int dado_attacco = rand() % 6 + 1;
+            printf("%s tira dado attacco: %d\n", attaccante->nome_giocatore, dado_attacco);
+
+            if (dado_attacco >= 4) { //colpo riuscito
+                if (dado_attacco == 6) {
+                    danni_inflitti = 2; //critico
+                } else {
+                    danni_inflitti = 1; //non critico
+                }
+                attaccante->dadi_attacco--; //sottrazione di un dado di attacco
+                stampa_infoGiocatore(attaccante);
+            } else {
+                printf("Colpo non andato a segno\n");
+                attaccante->dadi_attacco--; //sottrazione di un dado di attacco
+                stampa_infoGiocatore(attaccante);
+            }
+        }else{
+            printf("%s non può attaccare: dadi insufficienti (%d)\n", attaccante->nome_giocatore, attaccante->dadi_attacco);
         }
-        attaccante->dadi_attacco--; //sottrazione di un dado di attacco
-        stampa_infoGiocatore(attaccante);
-        if(difensore->dadi_difesa>0){
-            difesa_nemico(danni_inflitti, difensore); //difesa del nemico 
-        }
-    } else {
-        printf("Colpo non andato a segno\n");
-        attaccante->dadi_attacco--; //sottrazione di un dado di attacco
-        stampa_infoGiocatore(attaccante);
     }
+    return danni_inflitti;
 }
 
 /**
  * Effettua la procedura di difesa del giocatore
  * @param danni_inflitti danni da difendere
  * @param giocatore giocatore che si deve difendere
+ * @returns danni neutralizzati dalla difesa
  */
-static void difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore) {
-    int dado_difesa = rand() % 6 + 1;
-    printf("\n||%s DIFENDE||\n", giocatore->nome_giocatore);
-    printf("Giocatore tira dado difesa: %d\n", dado_difesa);
-
+static int difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore) {
     int danni_neutralizzati = 0;
-    if (dado_difesa >= 4) { //riuscita
-        if (dado_difesa == 6) {
-            danni_neutralizzati = 2; //critico
-            printf("Critico di difesa! Danni parati: 2\n");
-        } else {
-            danni_neutralizzati = 1; //non critico
-            printf("Danni parati: 1\n");
-        }
-    } else {
-        printf("Nessuna parata.\n");
-    }
+    if(giocatore->p_vita>0){
+        printf("\n||DIFESA DI %s||\n", giocatore->nome_giocatore);
+        if(giocatore->dadi_difesa>0){
+            if(danni_inflitti>0){
+                int dado_difesa = rand() % 6 + 1;
+                printf("Giocatore tira dado difesa: %d\n", dado_difesa);
 
-    int danni_effettivi = danni_inflitti - danni_neutralizzati; //calcolo danni subiti
-    //controllo se ricevuti danni
-    if (danni_effettivi > 0) {
-        giocatore->p_vita -= danni_effettivi;
-        printf("Giocatore subisce %d danni. Punti vita rimanenti: %d\n", danni_effettivi, giocatore->p_vita);
-    } else {
-        printf("Il giocatore para completamente il colpo!\n");
+                if (dado_difesa >= 4) { //riuscita
+                    if (dado_difesa == 6) {
+                        danni_neutralizzati = 2; //critico
+                        printf("Critico di difesa!\n");
+                    } else {
+                        danni_neutralizzati = 1; //non critico
+                    }
+                } else {
+                    printf("Nessuna parata.\n");
+                }
+
+                int danni_effettivi = danni_inflitti - danni_neutralizzati; //calcolo danni subiti
+                //controllo se ricevuti danni
+                if (danni_neutralizzati < danni_effettivi) {
+                    giocatore->p_vita -= danni_effettivi;
+                    printf("%s subisce %d danni.\n", giocatore->nome_giocatore, danni_effettivi);
+                } else {
+                    printf("%s para completamente il colpo!\n", giocatore->nome_giocatore);
+                }
+                giocatore->dadi_difesa--;
+                stampa_infoGiocatore(giocatore);
+            }else{
+                printf("Nessun danno da difendere\n");
+            }
+        }else{
+            printf("%s non può difendere: dadi di difesa insufficienti (%d)", giocatore->nome_giocatore, giocatore->dadi_difesa);
+        }
     }
-    giocatore->dadi_difesa--;
-    stampa_infoGiocatore(giocatore);
+    return danni_neutralizzati;
 }
 
 /**
@@ -873,6 +903,7 @@ static void difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore) {
  */
 static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
     char scelta = 'n';
+    bool combattenti_vivi = true;
     bool pronto = false;
     struct Nemico* nemico = malloc(sizeof(struct Nemico));
     if (nemico == NULL) {
@@ -897,52 +928,79 @@ static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
     }
 
 
-    do{
+    do {
         printf("Inizio del sorteggio per determinare chi inizia ad attaccare...\n");
-        if(sorteggio_combattimento(giocatore, nemico)){
+
+        if (sorteggio_combattimento(giocatore, nemico)) {
             printf("%s vince il sorteggio! Quindi attacchera' per primo\n", giocatore->nome_giocatore);
-            if(giocatore->dadi_attacco>0){
-                attacco_giocatore(giocatore, nemico);
-            }else{
-                printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", giocatore->nome_giocatore);
+
+            if (giocatore->dadi_attacco > 0) {
+                int danni_inflitti = attacco_giocatore(giocatore, nemico);
+                difesa_nemico(danni_inflitti, nemico); //difesa del nemico 
+            } else {
+                printf("%s non puo' attaccare! dadi di attacco insufficenti...\n", giocatore->nome_giocatore);
             }
-            if(nemico->dadi_attacco>0){
-                attacco_nemico(nemico, giocatore);
-            }else{
-                printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", nemico->nome_nemico);
+
+            if (nemico->dadi_attacco > 0) {
+                int danni_inflitti = attacco_nemico(nemico, giocatore);
+                difesa_giocatore(danni_inflitti, giocatore);
+            } else {
+                printf("%s non puo' attaccare! dadi di attacco insufficenti...\n", nemico->nome_nemico);
             }
-        }else{
+
+        } else {
             printf("%s vince il sorteggio! Quindi attacchera' per primo\n", nemico->nome_nemico);
-            if(nemico->dadi_attacco>0){
-                attacco_nemico(nemico, giocatore);
-            }else{
-                printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", nemico->nome_nemico);
+
+            if (nemico->dadi_attacco > 0) {
+                int danni_inflitti = attacco_nemico(nemico, giocatore);
+                difesa_giocatore(danni_inflitti, giocatore);
+            } else {
+                printf("%s non puo' attaccare! dadi di attacco insufficenti...\n", nemico->nome_nemico);
             }
-            if(giocatore->dadi_attacco>0){
-                attacco_giocatore(giocatore, nemico);
-            }else{
-                printf("%s non puo' attaccare! Dadi di attacco insufficenti...\n", giocatore->nome_giocatore);
+
+            if (giocatore->dadi_attacco > 0) {
+                int danni_inflitti = attacco_giocatore(giocatore, nemico);
+                difesa_nemico(danni_inflitti, nemico);
+            } else {
+                printf("%s non puo' attaccare! dadi di attacco insufficenti...\n", giocatore->nome_giocatore);
             }
         }
-        //controllo se entrambi i combattenti sono ancora vivi
-        if(giocatore->p_vita > 0 && nemico->p_vita>0){
+
+        //controllo se entrambi i combattenti sono ancora vivi e hanno dadi di attacco da giocare
+        combattenti_vivi = giocatore->p_vita > 0 && nemico->p_vita > 0;
+
+        if (combattenti_vivi) {
             //ciclo di attesa tra un turno di combattimento e l'altro
-            do{
-                printf("(%s) Si e' pronti per continuare?(s/n)", giocatore->nome_giocatore);
+            do {
+                printf("(%s) si e' pronti per continuare? (s/n): ", giocatore->nome_giocatore);
                 scanf(" %c", &scelta);
                 pronto = sceltaSiNo(scelta);
-            }while(!pronto);
+            } while (!pronto);
+        }
+
+    } while (combattenti_vivi && (giocatore->dadi_attacco > 0 || nemico->dadi_attacco > 0));
+
+    printf("\n|| COMBATTIMENTO TERMINATO ||\n");
+
+    if (giocatore->p_vita <= 0) {
+        printf("%s e' stato ucciso.\n", giocatore->nome_giocatore);
+    } else if (nemico->p_vita <= 0) {
+        printf("%s e' stato ucciso.\n", nemico->nome_nemico);
+    } else {
+        if (giocatore->dadi_attacco <= 0 && nemico->dadi_attacco <= 0) {
+            printf("Entrambi i combattenti hanno terminato i dadi di attacco.\n");
+            printf("%s e' fuori dal gioco.\n", giocatore->nome_giocatore);
+        } else if (giocatore->dadi_attacco <= 0 && nemico->dadi_attacco > 0) {
+            printf("%s non puo' piu' attaccare! dadi di attacco terminati.\n", giocatore->nome_giocatore);
+            printf("%s è stato sconfitto.\n", giocatore->dadi_attacco);
+        } else if (nemico->dadi_attacco <= 0 && giocatore->dadi_attacco > 0) {
+            printf("%s non puo' piu' attaccare! dadi di attacco terminati.\n", nemico->nome_nemico);
+            printf("%s è stato sconfitto.\n", nemico->nome_nemico);
         }
     }
-    while(giocatore->p_vita>0 && nemico->p_vita>0 && giocatore->dadi_attacco > 0 || nemico->dadi_attacco > 0);
-    printf("\n|| COMBATTIMENTO TERMINATO ||\n");
-    if(giocatore->p_vita <= 0){
-        printf("%s è stato ucciso.\n", giocatore->nome_giocatore);
-    }else if(nemico->p_vita <= 0){
-        printf("%s è stato ucciso.\n", nemico->nome_nemico);
-    }else{ //nel caso nessuno sia stato ucciso
-        
-    }
+    printf("\n||INFORMAZIONI FINALI SUI COMBATTENTI||\n");
+    stampa_infoGiocatore(giocatore);
+    stampa_infoNemico(nemico);
 }
 
 /**
