@@ -14,12 +14,14 @@ static int num_giocatori = 0; //contatore numero di giocatori
 static bool chiudi_mappa();
 static void ins_stanza(void);
 static bool sceltaSiNo(char scelta);
+static bool sceltaCombattereScappare(char scelta);
 static void stampa_stanza(struct Stanza* stanza);
 static struct Stanza* genera_random();
 
 static void attiva_trabocchetto(struct Stanza* stanza);
 static void avanza(struct Giocatore* giocatore);
 static void passa(int* turno);
+static bool scappa(struct Giocatore* giocatore);
 
 static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico);
 static int attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore);
@@ -45,17 +47,35 @@ int leggi_numero(const char* messaggio) {
 }
 
 /**
- * Analizza la scelta 
+ * Analizza se la scelta è affermativa
  * @returns true se la scelta è 's' o 'S'
  * @returns false se la scelta è 'n' o 'N'
  */
 static bool sceltaSiNo(char scelta){
-    if(scelta == 's' || scelta == 'S'){
-        return true;
-    }else if(scelta == 'n' || scelta == 'N'){
-        return false;
-    }
-    printf("Scelta non valida, inserire 's' per 'si' e 'n' per 'no'.");  
+    do{
+        if(scelta == 's' || scelta == 'S'){
+            return true;
+        }else if(scelta == 'n' || scelta == 'N'){
+            return false;
+        }
+    }while(scelta != 's' || scelta != 'S' || scelta != 'n' || scelta != 'N');
+    printf("Scelta non valida, inserire 's' per 'si' o 'n' per 'no'.");  
+}
+
+/**
+ * Analizza se la scelta è combattere o scappare
+ * @returns true se la scelta è 'c' o 'C' e quindi si vuole combattere
+ * @returns false se la scelta è 's' o 'S' e quindi si vuole scappare
+ */
+static bool sceltaCombattereScappare(char scelta){
+    do{
+        if(scelta == 'c' || scelta == 'C'){
+            return true;
+        }else if(scelta == 's' || scelta == 'S'){
+            return false;
+        }
+    }while(scelta != 'c' || scelta != 'C' || scelta != 's' || scelta != 'S');
+    printf("Scelta non valida, inserire 'c' per 'combattere' o 's' per 'scappare'.");  
 }
 
 /**
@@ -692,6 +712,10 @@ void imposta_gioco() {
 
 }
 
+/**
+ * Stampa le informazioni di un giocatore inerenti al combattimento
+ * @param giocatore giocatore di cui stampare le informazioni
+ */
 static void stampa_infoGiocatore(struct Giocatore* giocatore){
     printf("\n");
     printf("||Informazioni su %s||\n", giocatore->nome_giocatore);
@@ -702,6 +726,10 @@ static void stampa_infoGiocatore(struct Giocatore* giocatore){
     printf("\n");
 }
 
+/**
+ * Stampa le informazioni di un nemico inerenti al combattimento
+ * @param nemico nemico di cui stampare le informazioni
+ */
 static void stampa_infoNemico(struct Nemico* nemico){
     printf("\n");
     printf("||Informazioni su %s||\n", nemico->nome_nemico);
@@ -1047,11 +1075,32 @@ static void combatti(struct Giocatore* giocatore, char* tipo_nemico) {
 }
 
 /**
+ * Gestisce l'evasione di un giocatore a un combattimento
+ * @param giocatore giocatore che deve scappare
+ * @returns true se la fuga ha avuto successo
+ * @returns false se la fuga non ha avuto successo
+ */
+static bool scappa(struct Giocatore* giocatore){
+    bool evaso = false;
+    if(giocatore->evasioni>0){
+        printf("%s e' scappato.\n", giocatore->nome_giocatore);
+        giocatore->evasioni--;
+        return true;
+    }else{
+        giocatore->evasioni--;
+        printf("%s non è riuscito a scappare.\n", giocatore->nome_giocatore);
+        return false;
+    }
+}
+
+/**
  * Ha la possibilità di fare apparire un nemico
  * @param ultima true se è l'ultima stanza
  * @param ultima false se non è l'ultima stanza
  */
 static void enemy_spawn(struct Giocatore* giocatore, bool ultima){
+    char scelta;
+    bool evaso = false;
     if(ultima){
         printf("\n||Appare Jaffar||\n");
         combatti(giocatore, "Jaffar");
@@ -1060,10 +1109,30 @@ static void enemy_spawn(struct Giocatore* giocatore, bool ultima){
 
         if(rand_num<60){ //60%
             printf("\n||Appare uno scheletro||\n\n");
-            combatti(giocatore, "scheletro");
+            //richiesta se combattere o scappare
+            do{
+                printf("Combattere(c) o scappare(s)?\n");
+                scanf(" %c", &scelta);
+                if(sceltaCombattereScappare(scelta)){
+                    combatti(giocatore, "scheletro");
+                    evaso = true;
+                }else{
+                    evaso = scappa(giocatore);
+                }
+            }while(!evaso);
         }else { //40%
             printf("\n||Appare una guardia||\n\n");
-            combatti(giocatore, "guardia");
+            //richiesta se combattere o scappare
+            do{
+                printf("Combattere(c) o scappare(s)?\n");
+                scanf(" %c", &scelta);
+                if(sceltaCombattereScappare(scelta)){
+                    combatti(giocatore, "guardia");
+                    evaso = true;
+                }else{
+                    evaso = scappa(giocatore);
+                }
+            }while(!evaso);
         }
     }
 }
