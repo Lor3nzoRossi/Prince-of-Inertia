@@ -15,7 +15,7 @@ static bool chiudi_mappa();
 static void ins_stanza(void);
 static bool sceltaSiNo(char scelta);
 static bool sceltaCombattereScappare(char scelta);
-static void stampa_stanza(struct Stanza* stanza);
+static void stampa_zona(struct Stanza* stanza);
 static struct Stanza* genera_random();
 
 static void attiva_trabocchetto(struct Stanza* stanza);
@@ -444,13 +444,15 @@ void stampa_stanze() {
     }
 }
 
-static void stampa_stanza(struct Stanza* stanza){
+static void stampa_zona(struct Stanza* stanza){
     printf("Tipo stanza: %s\n", get_tipoStanza(stanza->tipo_stanza));
     printf("Trabocchetto: %s\n", get_trabocchetto(stanza->trabocchetto));
-    printf("Tesoro: %s\n", get_tesoro(stanza->tesoro));
+    if(stanza->tesoro){
+        printf("Contiene un tesoro\n");
+    }else{
+        printf("Non contiene alcun tesoro");
+    }
 }
-
-
 
 
 
@@ -713,7 +715,7 @@ void imposta_gioco() {
 }
 
 /**
- * Stampa le informazioni di un giocatore inerenti al combattimento
+ * Stampa le informazioni di un giocatore 
  * @param giocatore giocatore di cui stampare le informazioni
  */
 static void stampa_giocatore(struct Giocatore* giocatore){
@@ -725,8 +727,6 @@ static void stampa_giocatore(struct Giocatore* giocatore){
     printf("Dadi attacco: %d\n", giocatore->dadi_attacco);
     printf("Dadi difesa: %d\n", giocatore->dadi_difesa);
     printf("Numero di evasioni: %d\n", giocatore->evasioni);
-    printf("Posizione: %d\n");
-    stampa_stanza(giocatore->posizione);
     printf("\n");
 }
 
