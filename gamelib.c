@@ -716,13 +716,17 @@ void imposta_gioco() {
  * Stampa le informazioni di un giocatore inerenti al combattimento
  * @param giocatore giocatore di cui stampare le informazioni
  */
-static void stampa_infoGiocatore(struct Giocatore* giocatore){
+static void stampa_giocatore(struct Giocatore* giocatore){
     printf("\n");
     printf("||Informazioni su %s||\n", giocatore->nome_giocatore);
+    printf("Classe: %d\n", giocatore->classe_giocatore);
     printf("Punti vita max: %d\n", giocatore->p_vita_max);
     printf("Punti vita: %d\n", giocatore->p_vita);
     printf("Dadi attacco: %d\n", giocatore->dadi_attacco);
     printf("Dadi difesa: %d\n", giocatore->dadi_difesa);
+    printf("Numero di evasioni: %d\n", giocatore->evasioni);
+    printf("Posizione: %d\n");
+    stampa_stanza(giocatore->posizione);
     printf("\n");
 }
 
@@ -730,7 +734,7 @@ static void stampa_infoGiocatore(struct Giocatore* giocatore){
  * Stampa le informazioni di un nemico inerenti al combattimento
  * @param nemico nemico di cui stampare le informazioni
  */
-static void stampa_infoNemico(struct Nemico* nemico){
+static void stampa_Nemico(struct Nemico* nemico){
     printf("\n");
     printf("||Informazioni su %s||\n", nemico->nome_nemico);
     printf("punti vita: %d\n", nemico->p_vita);
@@ -806,7 +810,7 @@ static int difesa_nemico(int danni_inflitti, struct Nemico* nemico) {
                     printf("%s para completamente il colpo!\n", nemico->nome_nemico);
                 }
                 nemico->dadi_difesa--;
-                stampa_infoNemico(nemico);
+                stampa_nemico(nemico);
             }else{
                 printf("Nessun danno da difendere\n");
             }
@@ -840,11 +844,11 @@ static int attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore
                     printf("Danni totalizzati: 1\n");
                 }
                 attaccante->dadi_attacco--;
-                stampa_infoNemico(attaccante);
+                stampa_nemico(attaccante);
             } else {
                 printf("Colpo non andato a segno\n");
                 attaccante->dadi_attacco--;
-                stampa_infoNemico(attaccante);
+                stampa_nemico(attaccante);
             }
         }else{
             printf("%s non può attaccare: dadi insufficienti (%d)\n", attaccante->nome_nemico, attaccante->dadi_attacco);
@@ -875,11 +879,11 @@ static int attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difens
                     printf("Danni totalizzati: 1\n");
                 }
                 attaccante->dadi_attacco--; //sottrazione di un dado di attacco
-                stampa_infoGiocatore(attaccante);
+                stampa_giocatore(attaccante);
             } else {
                 printf("Colpo non andato a segno\n");
                 attaccante->dadi_attacco--; //sottrazione di un dado di attacco
-                stampa_infoGiocatore(attaccante);
+                stampa_giocatore(attaccante);
             }
         }else{
             printf("%s non può attaccare: dadi insufficienti (%d)\n", attaccante->nome_giocatore, attaccante->dadi_attacco);
@@ -923,7 +927,7 @@ static int difesa_giocatore(int danni_inflitti, struct Giocatore* giocatore) {
                     printf("%s para completamente il colpo!\n", giocatore->nome_giocatore);
                 }
                 giocatore->dadi_difesa--;
-                stampa_infoGiocatore(giocatore);
+                stampa_giocatore(giocatore);
             }else{
                 printf("Nessun danno da difendere\n");
             }
@@ -1054,7 +1058,7 @@ static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
             printf("%s è stato sconfitto.\n", nemico->nome_nemico);
         }
     }
-    stampa_infoGiocatore(giocatore);
+    stampa_giocatore(giocatore);
 }
 
 /**
@@ -1085,6 +1089,8 @@ static bool scappa(struct Giocatore* giocatore){
     if(giocatore->evasioni>0){
         printf("%s e' scappato.\n", giocatore->nome_giocatore);
         giocatore->evasioni--;
+        printf("%s e' tornato nella stanza precedente\n", giocatore->nome_giocatore);
+        giocatore->posizione = giocatore->posizione_precedente;
         return true;
     }else{
         giocatore->evasioni--;
@@ -1118,6 +1124,7 @@ static void enemy_spawn(struct Giocatore* giocatore, bool ultima){
                     evaso = true;
                 }else{
                     evaso = scappa(giocatore);
+                    printf("%s ha rimasto %d evasioni\n", giocatore->nome_giocatore, giocatore->evasioni);
                 }
             }while(!evaso);
         }else { //40%
@@ -1131,6 +1138,7 @@ static void enemy_spawn(struct Giocatore* giocatore, bool ultima){
                     evaso = true;
                 }else{
                     evaso = scappa(giocatore);
+                    printf("%s ha rimasto %d evasioni\n", giocatore->nome_giocatore, giocatore->evasioni);
                 }
             }while(!evaso);
         }
@@ -1195,6 +1203,7 @@ static void avanza(struct Giocatore* giocatore) {
         //muovi nella direzione scelta
         for (int i = 0; i < num_stanze_valide; i++) {
             if (strcmp(scelta, direzioni[direzioni_possibili[i]]) == 0) {
+                giocatore->posizione_precedente = giocatore->posizione;
                 giocatore->posizione = stanze_adiacenti[i];
                 printf("Ti muovi verso: %s\n", scelta);
                 scelta_valida = true;
