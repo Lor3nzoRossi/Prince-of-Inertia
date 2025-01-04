@@ -64,6 +64,7 @@ struct Giocatore {
     char nome_giocatore[100];
     enum tipo_giocatore classe_giocatore;
     struct Stanza* posizione;
+    struct Stanza* posizione_precedente;
     unsigned char p_vita_max;
     unsigned char p_vita;
     unsigned char dadi_attacco;
