@@ -68,6 +68,7 @@ struct Giocatore {
     unsigned char p_vita;
     unsigned char dadi_attacco;
     unsigned char dadi_difesa;
+    unsigned char evasioni;
 };
 
 struct Nemico {

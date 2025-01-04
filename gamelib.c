@@ -129,7 +129,6 @@ void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore) {
     numGiocatore += 1; //aumento di 1 per visualizzazione
 
     //INSERIMENTO DATI GIOCATORE
-
     printf("Inserire il nome per il giocatore: ");
     scanf("%s", &giocatore->nome_giocatore); 
 
@@ -139,6 +138,13 @@ void inizializza_giocatore(struct Giocatore* giocatore, int numGiocatore) {
     giocatore->dadi_attacco = 2; //inizio predefinito con 2 dadi di attacco
 
     giocatore->dadi_difesa = 2; //inizio predefinito con 2 dadi di difesa
+    
+    //impostazione evasioni in base a classe scelta
+    if(giocatore->classe_giocatore == principe){
+        giocatore->evasioni = 2;
+    }else if(giocatore->classe_giocatore == doppleganger){
+        giocatore->evasioni = 1;
+    }
 
     giocatore->posizione = NULL; //inizializzazione della posizione (di default NULL)
 
