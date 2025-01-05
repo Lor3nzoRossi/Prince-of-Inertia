@@ -16,13 +16,12 @@ static void ins_stanza(void);
 static bool sceltaSiNo(char scelta);
 static bool sceltaCombattereScappare(char scelta);
 static void stampa_zona(struct Stanza* stanza);
+static void prendi_tesoro(struct Stanza* stanza);
 static struct Stanza* genera_random();
-
 static void attiva_trabocchetto(struct Stanza* stanza);
 static void avanza(struct Giocatore* giocatore);
 static void passa(int* turno);
 static bool scappa(struct Giocatore* giocatore);
-
 static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico);
 static int attacco_giocatore(struct Giocatore* attaccante, struct Nemico* difensore);
 static int attacco_nemico(struct Nemico* attaccante, struct Giocatore* difensore);
@@ -393,8 +392,8 @@ const char* get_tipoStanza(int nStanza) {
  * Recupera il nome del trabocchetto dato un numero da 0 - 9 (in base alle scelte nel menù)
  * @returns stringa del nome del trabocchetto
  */
-const char* get_trabocchetto(int nStanza) {
-    switch(nStanza) {
+const char* get_trabocchetto(int nTrabocchetto) {
+    switch(nTrabocchetto) {
         case 0:
             return "Nessuno";
         case 1:
@@ -414,8 +413,8 @@ const char* get_trabocchetto(int nStanza) {
  * Recupera il nome del tesoro dato un numero da 0 - 9 (in base alle scelte nel menù)
  * @returns stringa del nome del tesoro
  */
-const char* get_tesoro(int nStanza) {
-    switch(nStanza) {
+const char* get_tesoro(int nTesoro) {
+    switch(nTesoro) {
         case 0:
             return "Nessun tesoro";
         case 1:
@@ -431,6 +430,28 @@ const char* get_tesoro(int nStanza) {
         default:
             return "Tipo di tesoro sconosciuto";
     }
+}
+
+/**
+ * Permette di prendere il tesoro all'interno di una stanza
+ * @param giocatore giocatore che deve prendere il tesoro
+ * @param stanza stanza da cui prendere il tesoro
+ */
+static void prendi_tesoro(struct Giocatore* giocatore, struct Stanza* stanza){
+    char* tesoro = get_tesoro(stanza->tipo_stanza);
+    if(tesoro == "Verde veleno"){
+        giocatore->p_vita --;
+    }else if(tesoro == "blu guarigione"){
+        giocatore->p_vita = (giocatore->p_vita < 5) ? giocatore->p_vita + 1 : giocatore->p_vita; //incremento di 1 i punti vita, senza superare 5
+    }else if(tesoro == "rosso aumenta vita"){
+        giocatore->p_vita_max++;
+        giocatore->p_vita = giocatore->p_vita_max;
+    }else if(tesoro == "Spada tagliente"){
+        giocatore->dadi_attacco++;
+    }else if(tesoro == "Scudo"){
+        giocatore->dadi_difesa++;
+    }
+    stanza->tesoro = NULL; //eliminazione del tesoro nella stanza
 }
 
 
@@ -453,6 +474,7 @@ static void stampa_zona(struct Stanza* stanza){
         printf("Non contiene alcun tesoro");
     }
 }
+
 
 
 
