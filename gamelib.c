@@ -16,7 +16,7 @@ static void ins_stanza(void);
 static bool sceltaSiNo(char scelta);
 static bool sceltaCombattereScappare(char scelta);
 static void stampa_zona(struct Stanza* stanza);
-static void prendi_tesoro(struct Stanza* stanza);
+static void prendi_tesoro(struct Giocatore* giocatore, struct Stanza* stanza);
 static struct Stanza* genera_random();
 static void attiva_trabocchetto(struct Stanza* stanza);
 static void avanza(struct Giocatore* giocatore);
@@ -437,22 +437,28 @@ const char* get_tesoro(int nTesoro) {
  * @param giocatore giocatore che deve prendere il tesoro
  * @param stanza stanza da cui prendere il tesoro
  */
-static void prendi_tesoro(struct Giocatore* giocatore, struct Stanza* stanza){
-    char* tesoro = get_tesoro(stanza->tipo_stanza);
-    if(tesoro == "Verde veleno"){
-        giocatore->p_vita --;
-    }else if(tesoro == "blu guarigione"){
-        giocatore->p_vita = (giocatore->p_vita < 5) ? giocatore->p_vita + 1 : giocatore->p_vita; //incremento di 1 i punti vita, senza superare 5
-    }else if(tesoro == "rosso aumenta vita"){
+static void prendi_tesoro(struct Giocatore* giocatore, struct Stanza* stanza) {
+    const char* tesoro = get_tesoro(stanza->tipo_stanza);
+
+    if (strcmp(tesoro, "Verde veleno") == 0) {
+        giocatore->p_vita--;
+    } else if (strcmp(tesoro, "blu guarigione") == 0) {
+        //incremento punti vita, senza superare 5
+        if (giocatore->p_vita < 5) {
+            giocatore->p_vita++;
+        }
+    } else if (strcmp(tesoro, "rosso aumenta vita") == 0) {
         giocatore->p_vita_max++;
         giocatore->p_vita = giocatore->p_vita_max;
-    }else if(tesoro == "Spada tagliente"){
+    } else if (strcmp(tesoro, "Spada tagliente") == 0) {
         giocatore->dadi_attacco++;
-    }else if(tesoro == "Scudo"){
+    } else if (strcmp(tesoro, "Scudo") == 0) {
         giocatore->dadi_difesa++;
     }
-    stanza->tesoro = NULL; //eliminazione del tesoro nella stanza
+
+    stanza->tesoro = nessun_tesoro; //eliminazione del tesoro nella stanza una volta preso
 }
+
 
 
 /**
@@ -756,7 +762,7 @@ static void stampa_giocatore(struct Giocatore* giocatore){
  * Stampa le informazioni di un nemico inerenti al combattimento
  * @param nemico nemico di cui stampare le informazioni
  */
-static void stampa_Nemico(struct Nemico* nemico){
+static void stampa_nemico(struct Nemico* nemico){
     printf("\n");
     printf("||Informazioni su %s||\n", nemico->nome_nemico);
     printf("punti vita: %d\n", nemico->p_vita);
@@ -1233,11 +1239,13 @@ static void avanza(struct Giocatore* giocatore) {
             }
         }
 
+        //in caso di scelta valida
         if (scelta_valida) {
+            prendi_tesoro(giocatore, giocatore->posizione); //il giocatore prende il tesoro
             if(giocatore->posizione == pUltima){
-                enemy_spawn(giocatore ,true);
+                enemy_spawn(giocatore ,true); //far apparire Jaffar
             }else{
-                enemy_spawn(giocatore, false);
+                enemy_spawn(giocatore, false); //far apparire un nemico diverso da Jaffar
             }
         }else{
             printf("Direzione non valida, per favore scegli tra le direzioni possibili.\n");
