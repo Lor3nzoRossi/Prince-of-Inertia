@@ -438,25 +438,39 @@ const char* get_tesoro(int nTesoro) {
  * @param stanza stanza da cui prendere il tesoro
  */
 static void prendi_tesoro(struct Giocatore* giocatore, struct Stanza* stanza) {
-    const char* tesoro = get_tesoro(stanza->tipo_stanza);
+    if(stanza->tesoro != nessun_tesoro){
+        printf("E' presente un tesoro nella stanza!\n");
+        const char* tesoro = get_tesoro(stanza->tipo_stanza);
+        printf("Apertura del forziere...\n");
+        printf("All'interno si trova: %s\n", tesoro);
 
-    if (strcmp(tesoro, "Verde veleno") == 0) {
-        giocatore->p_vita--;
-    } else if (strcmp(tesoro, "blu guarigione") == 0) {
-        //incremento punti vita, senza superare 5
-        if (giocatore->p_vita < 5) {
-            giocatore->p_vita++;
+        if (strcmp(tesoro, "Verde veleno") == 0) {
+            giocatore->p_vita--;
+            printf("%s perde un punto vita\n", giocatore->nome_giocatore);
+        } else if (strcmp(tesoro, "blu guarigione") == 0) {
+            //incremento punti vita, senza superare i punti vita massimi
+            if (giocatore->p_vita < giocatore->p_vita_max) {
+                giocatore->p_vita++;
+                printf("%s guadagna un punto vita\n", giocatore->nome_giocatore);
+            }else{
+                printf("%s non guadagna alcun punto vita, dato che possiede già la salute massima\n", giocatore->nome_giocatore);
+            }
+        } else if (strcmp(tesoro, "rosso aumenta vita") == 0) {
+            giocatore->p_vita_max++;
+            giocatore->p_vita = giocatore->p_vita_max;
+            printf("%s aumenta la sua vita massima di 1\n", giocatore->nome_giocatore);
+        } else if (strcmp(tesoro, "Spada tagliente") == 0) {
+            giocatore->dadi_attacco++;
+            printf("%s ottiene un dado di attacco aggiuntivo\n", giocatore->nome_giocatore);
+        } else if (strcmp(tesoro, "Scudo") == 0) {
+            giocatore->dadi_difesa++;
+            printf("%s ottiene un dado di difesa aggiuntivo\n", giocatore->nome_giocatore);
         }
-    } else if (strcmp(tesoro, "rosso aumenta vita") == 0) {
-        giocatore->p_vita_max++;
-        giocatore->p_vita = giocatore->p_vita_max;
-    } else if (strcmp(tesoro, "Spada tagliente") == 0) {
-        giocatore->dadi_attacco++;
-    } else if (strcmp(tesoro, "Scudo") == 0) {
-        giocatore->dadi_difesa++;
-    }
 
-    stanza->tesoro = nessun_tesoro; //eliminazione del tesoro nella stanza una volta preso
+        stanza->tesoro = nessun_tesoro; //eliminazione del tesoro nella stanza una volta preso
+    }else{
+        printf("Nessun tesoro presente nella stanza\n");
+    }
 }
 
 
@@ -782,7 +796,7 @@ static bool sorteggio_combattimento(struct Giocatore* giocatore, struct Nemico* 
     int dado_giocatore = 0;
     int dado_nemico = 0;
 
-    printf("\n\n||SORTEGGIO||\n");
+    printf("\n||SORTEGGIO||\n");
     do {
         printf("%s lancia il dado...\n", giocatore->nome_giocatore);
         dado_giocatore = rand() % 6 + 1; // lancio dado giocatore
@@ -797,7 +811,7 @@ static bool sorteggio_combattimento(struct Giocatore* giocatore, struct Nemico* 
         } else if (dado_giocatore < dado_nemico) {
             return false; // false se vince il nemico
         } else {
-            printf("Il risultato e' un pareggio, la procedura verrà ripetuta.\n");
+            printf("Il risultato e' un pareggio, la procedura verra' ripetuta.\n");
         }
     } while (dado_giocatore == dado_nemico);
 
@@ -1005,7 +1019,7 @@ static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
     do {
         printf("Inizio del sorteggio per determinare chi inizia ad attaccare...\n");
 
-        if(giocatore->p_vita>0 && nemico->p_vita>0){
+        if(combattenti_vivi){
             if (sorteggio_combattimento(giocatore, nemico)) {
                 printf("%s vince il sorteggio! Quindi attacchera' per primo\n", giocatore->nome_giocatore);
 
@@ -1062,7 +1076,7 @@ static void combatti_nemico(struct Giocatore* giocatore, char* tipo_nemico){
             } while (!pronto);
         }
 
-    } while (combattenti_vivi && (giocatore->dadi_attacco > 0 || nemico->dadi_attacco > 0));
+    } while (combattenti_vivi && giocatore->dadi_attacco > 0 && nemico->dadi_attacco > 0);
 
     printf("\n|| COMBATTIMENTO TERMINATO ||\n");
 
@@ -1242,6 +1256,7 @@ static void avanza(struct Giocatore* giocatore) {
         //in caso di scelta valida
         if (scelta_valida) {
             prendi_tesoro(giocatore, giocatore->posizione); //il giocatore prende il tesoro
+            stampa_giocatore(giocatore);
             if(giocatore->posizione == pUltima){
                 enemy_spawn(giocatore ,true); //far apparire Jaffar
             }else{
